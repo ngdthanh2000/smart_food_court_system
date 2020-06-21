@@ -30,20 +30,20 @@ class MainActivity : AppCompatActivity() {
             var userInput = LoginInfo(username.text.toString(), passwd.text.toString())
             authorize(userInput)
         }
-        btnLogin.setOnLongClickListener{
+        /*btnLogin.setOnLongClickListener{
             Toast.makeText(this, "Long click", Toast.LENGTH_SHORT).show()
             true
-        }
+        }*/
 
     }
-    /*private fun loadOrderActivity(){
-        val intent: Intent = Intent(this, Ordering::class.java)
+    private fun loadOrderActivity(){
+        val intent: Intent = Intent(this, ManagingActivity::class.java)
         startActivity(intent)
-    }*/
+    }
     private fun loginSuccessfully(){
 
         Toast.makeText(this, "Login successfully", Toast.LENGTH_SHORT).show()
-       // loadOrderActivity()
+        loadOrderActivity()
     }
     private fun loginFail(){
         Toast.makeText(this,"Fail to login", Toast.LENGTH_SHORT).show()
@@ -51,7 +51,7 @@ class MainActivity : AppCompatActivity() {
     private fun authorize(input: LoginInfo) {
         //Log.d("authorizing",input.username + " " + input.password)
         var firebaseDB: DatabaseReference = Firebase.database.reference
-        var customers = firebaseDB.child("users").child("customers").ref
+        var customers = firebaseDB.child("users").child("admin").ref
         customers.addValueEventListener( object : ValueEventListener {
             override fun onCancelled(error: DatabaseError) {
                 TODO("Not yet implemented")
