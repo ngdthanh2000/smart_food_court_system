@@ -1,0 +1,98 @@
+{
+  "project_info": {
+    "project_number": "234614391726",
+    "firebase_url": "https://testapplication-aa946.firebaseio.com",
+    "project_id": "testapplication-aa946",
+    "storage_bucket": "testapplication-aa946.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:234614391726:android:1b29541797e31c98f8be3f",
+        "android_client_info": {
+          "package_name": "com.ngsown.orderapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "234614391726-7mds5v6vm0ld4l4am1v37d0kc15plpat.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD2FpSh097naESSeC--6tmH6_Hkcnb6VEY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "234614391726-7mds5v6vm0ld4l4am1v37d0kc15plpat.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:234614391726:android:165c7052c2d6bd27f8be3f",
+        "android_client_info": {
+          "package_name": "com.ngsown.ordermanagementapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "234614391726-7mds5v6vm0ld4l4am1v37d0kc15plpat.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD2FpSh097naESSeC--6tmH6_Hkcnb6VEY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "234614391726-7mds5v6vm0ld4l4am1v37d0kc15plpat.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:234614391726:android:9ae1ae98e4e10cfef8be3f",
+        "android_client_info": {
+          "package_name": "com.ngsowntest.testapplication"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "234614391726-7mds5v6vm0ld4l4am1v37d0kc15plpat.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD2FpSh097naESSeC--6tmH6_Hkcnb6VEY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "234614391726-7mds5v6vm0ld4l4am1v37d0kc15plpat.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
