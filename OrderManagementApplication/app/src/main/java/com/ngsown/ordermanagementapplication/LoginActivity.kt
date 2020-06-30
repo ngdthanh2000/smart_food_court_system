@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
@@ -20,11 +21,8 @@ class LoginActivity : AppCompatActivity() {
         setContentView(R.layout.activity_login)
 
         var btnLogin = findViewById<Button>(R.id.btnLogin)
-        //var mdialog:ProgressDialog = ProgressDialog(this)
-        //mdialog.setMessage("Signing in")
-        btnLogin.setOnClickListener {
-            // mdialog.show()
 
+        btnLogin.setOnClickListener {
             var username: EditText = findViewById(R.id.edtUsername)
             var passwd: EditText = findViewById(R.id.edtPassword)
             var userInput = LoginInfo(username.text.toString(), passwd.text.toString())
@@ -66,6 +64,8 @@ class LoginActivity : AppCompatActivity() {
                 if (snapshot.child(input.username).key.toString() == input.username && snapshot.child(input.username).child("password").getValue().toString() == input.password) {
                     val pref = getSharedPreferences("PREF", Context.MODE_PRIVATE)
                     pref.edit().putString("username", input.username).apply()
+                    pref.edit().putString("vendor_id", snapshot.child(input.username).child("id").value.toString()).apply()
+                    Log.d("vendor_id", pref.getString("vendor_id", "00").toString())
                     loginSuccessfully()
                 }
                 else

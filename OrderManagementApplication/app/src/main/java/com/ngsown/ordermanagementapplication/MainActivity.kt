@@ -19,14 +19,10 @@ import com.google.firebase.ktx.Firebase
 
 data class LoginInfo(val username: String, val password: String){}
 
-@Suppress("DEPRECATION")
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        //supportActionBar!!.setDisplayShowTitleEnabled(false)
-        //supportActionBar.
-        //var txtTest = findViewById<TextView>(R.id.txtTest)
         var txtLogo = findViewById<TextView>(R.id.txtLogo)
         txtLogo.text = "Smart Food Court System"
         var btnLogo = findViewById<Button>(R.id.btnLogo)
