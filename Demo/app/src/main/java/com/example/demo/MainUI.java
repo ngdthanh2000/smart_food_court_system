@@ -54,6 +54,9 @@ public class MainUI extends AppCompatActivity implements  NavigationView.OnNavig
             case R.id.nav_staff:
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new StaffFragment()).commit();
                 break;
+            case R.id.nav_report:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new ReportFragment()).commit();
+                break;
         }
         drawer.closeDrawer(GravityCompat.START);
         return true;

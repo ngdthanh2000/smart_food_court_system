@@ -19,10 +19,15 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+;
+
 public class SignIn extends AppCompatActivity {
     //EditText editID, editPass;
     Button btnSignIn;
     DatabaseReference ref;
+
+    UserInfo userInfo = new UserInfo();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,12 +44,13 @@ public class SignIn extends AppCompatActivity {
                 mDialog.setMessage("Please wait...");
                 mDialog.show();
 
-                ref = FirebaseDatabase.getInstance().getReference().child("Admin").child("Vendor Owner");
+                ref = FirebaseDatabase.getInstance().getReference().child("Vendors");
                 ref.addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         String inputID = ((EditText)findViewById(R.id.editID)).getText().toString();
                         String inputPass = ((EditText)findViewById(R.id.editPass)).getText().toString();
+                        userInfo.setUserName(inputID);
                         //String dataPass = snapshot.child(inputID).child("password").getValue().toString();
                         if (snapshot.child(inputID).exists()){
                             mDialog.dismiss();
