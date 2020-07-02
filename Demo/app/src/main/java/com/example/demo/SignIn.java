@@ -39,7 +39,7 @@ public class SignIn extends AppCompatActivity {
                 mDialog.setMessage("Please wait...");
                 mDialog.show();
 
-                ref = FirebaseDatabase.getInstance().getReference().child("user");
+                ref = FirebaseDatabase.getInstance().getReference().child("Admin").child("Vendor Owner");
                 ref.addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -56,7 +56,7 @@ public class SignIn extends AppCompatActivity {
                                 finish();
                             }
                             else {
-                                Toast.makeText(SignIn.this, "Sign In Failed!", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(SignIn.this, "Wrong Password!", Toast.LENGTH_SHORT).show();
                             }
                         }
                         else{

@@ -33,7 +33,7 @@ public class MainUI extends AppCompatActivity implements  NavigationView.OnNavig
         if (savedInstanceState == null){
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new MenuFragment()).commit();
             navigationView.setCheckedItem(R.id.nav_menu);
-    }   }
+        }   }
 
     @Override
     public void onBackPressed(){
