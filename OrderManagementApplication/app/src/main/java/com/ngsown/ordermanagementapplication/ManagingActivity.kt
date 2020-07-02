@@ -1,9 +1,9 @@
 package com.ngsown.ordermanagementapplication
 
-import android.app.ProgressDialog
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
+import android.widget.AdapterView.OnItemClickListener
 import android.widget.ListView
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.database.DataSnapshot
@@ -39,13 +39,19 @@ class ManagingActivity : AppCompatActivity() {
                 temp_req.date = order.child("date").value.toString()
                 temp_req.id = order.child("id").value.toString()
                 temp_req.status = order.child("status").value.toString()
-
+                temp_req.request_key = order.key.toString()
                 //var foods = order.child("foods").ref
                 for (food in order.child("foods").children) {
                     var food_info = Food(food.child("productName").value.toString(),
                                          food.child("quantity").value.toString(),
-                                         food.child("vendor").value.toString())
-                    temp_req.foods.add(food_info)
+                                         food.child("vendor").value.toString(),
+                                         food.child("price").value.toString(),
+                                         food.child("productId").value.toString(),
+                                         food.child("discount").value.toString())
+                    if (food_info.vendor == vendor_id) {
+                        temp_req.foods.add(food_info)
+                        temp_req.food_index.add(food.key.toString())
+                    }
                 }
                 return temp_req
             }
@@ -57,7 +63,7 @@ class ManagingActivity : AppCompatActivity() {
                 for (order in snapshot.children){
                     var req = getRequest(order)
                     // Only get the foods of the current vendor
-                    req.foods = ArrayList(req.foods.filter{it.vendor.equals(vendor_id)})
+                    //req.foods = ArrayList(req.foods.filter{it.vendor.equals(vendor_id)})
                     /*for (food in req.foods){
                         if (food.vendor != vendor_id)
                             req.foods.remove(food)
@@ -70,6 +76,7 @@ class ManagingActivity : AppCompatActivity() {
                 //val progressDialog = ProgressDialog(this@ManagingActivity)
                // progressDialog.show()
                 list.adapter = ListAdapter(this@ManagingActivity, newRequestList)
+
                 allRequestList.addAll(newRequestList)
 
               //  progressDialog.cancel()

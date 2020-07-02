@@ -6,5 +6,7 @@ data class Request (
     var id: String = "",
     var owner: String = "",
     var status: String = "",
-    var total: String = ""
+    var total: String = "",
+    var request_key: String = "",
+    var food_index: ArrayList<String> = ArrayList()
 )

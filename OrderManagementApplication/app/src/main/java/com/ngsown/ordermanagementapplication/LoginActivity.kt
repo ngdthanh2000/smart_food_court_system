@@ -50,7 +50,7 @@ class LoginActivity : AppCompatActivity() {
     private fun authorize(input: LoginInfo) {
         //Log.d("authorizing",input.username + " " + input.password)
         var firebaseDB: DatabaseReference = Firebase.database.reference
-        var customers = firebaseDB.child("Admin").child("Vendor Owner").ref
+        var customers = firebaseDB.child("Vendors").ref
         //var customers = firebaseDB.ref
         customers.addValueEventListener( object : ValueEventListener {
             override fun onCancelled(error: DatabaseError) {
