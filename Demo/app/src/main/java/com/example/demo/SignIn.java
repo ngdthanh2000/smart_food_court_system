@@ -25,9 +25,6 @@ public class SignIn extends AppCompatActivity {
     //EditText editID, editPass;
     Button btnSignIn;
     DatabaseReference ref;
-
-    UserInfo userInfo = new UserInfo();
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,7 +47,7 @@ public class SignIn extends AppCompatActivity {
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         String inputID = ((EditText)findViewById(R.id.editID)).getText().toString();
                         String inputPass = ((EditText)findViewById(R.id.editPass)).getText().toString();
-                        userInfo.setUserName(inputID);
+                        UserInfo.instance.setUserName(inputID);
                         //String dataPass = snapshot.child(inputID).child("password").getValue().toString();
                         if (snapshot.child(inputID).exists()){
                             mDialog.dismiss();

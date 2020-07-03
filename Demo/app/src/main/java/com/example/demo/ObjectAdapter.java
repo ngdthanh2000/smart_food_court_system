@@ -1,6 +1,7 @@
 package com.example.demo;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +11,8 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.karumi.dexter.Dexter;
 
 import java.util.List;
 
@@ -51,7 +54,7 @@ public class ObjectAdapter extends RecyclerView.Adapter<ObjectAdapter.ViewHolder
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ObjectAdapter.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull final ObjectAdapter.ViewHolder holder, int position) {
         DateObject object = mObjects.get(position);
 
         // Set item views based on your views and data model
@@ -66,7 +69,9 @@ public class ObjectAdapter extends RecyclerView.Adapter<ObjectAdapter.ViewHolder
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(view.getContext(), "REPORT", Toast.LENGTH_SHORT).show();
+                UserInfo.instance.setFood(mObjects.get(holder.getAdapterPosition()).getFood());
+                Intent intent = new Intent(view.getContext(), CreateReport.class);
+                view.getContext().startActivity(intent);
             }
         });
     }

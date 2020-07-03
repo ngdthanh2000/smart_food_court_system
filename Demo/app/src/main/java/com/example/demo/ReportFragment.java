@@ -103,6 +103,7 @@ public class ReportFragment extends Fragment {
         readData(new MyCallback() {
             @Override
             public void onCallback(ArrayList<DateObject> value) {
+
                 ObjectAdapter adapter = new ObjectAdapter(value);
 
                 recyclerView.setAdapter(adapter);
@@ -144,15 +145,54 @@ public class ReportFragment extends Fragment {
                                     object.setNumberOfOrder(object.getNumberOfOrder() + 1);
                                     for (OrderFood food : order.getFoods()) {
                                         object.setRevenue(object.getRevenue() + Integer.parseInt(food.getPrice()) * Integer.parseInt(food.getQuantity()));
+                                         /*for (FoodReport fr : object.getFood()) {
+                                            if (food.getName().equals(fr.getName())) {
+                                                fr.setQuantity(fr.getQuantity() + Integer.parseInt(food.getQuantity()));
+                                            }
+                                        }*/
                                     }
                                 }
                             }
 
                             if (!isExists) {
-                                DateObject object1 = new DateObject(strDate, 1, 0);
+                                final ArrayList<FoodReport> tempFoods = new ArrayList<FoodReport>();
+                                DatabaseReference reference = FirebaseDatabase.getInstance().getReference().child("Food");
+                                reference.orderByChild("Vendor").equalTo(UserInfo.instance.getUserName().substring(UserInfo.instance.getUserName().length() - 2)).addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                        if (snapshot.getChildrenCount() > 0) {
+                                            for (DataSnapshot data : snapshot.getChildren()) {
+                                                FoodReport foodReport = data.getValue(FoodReport.class);
+                                                foodReport.setId(data.getKey());
+                                                tempFoods.add(foodReport);
+                                            }
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError error) {
+
+                                    }
+                                });
+
+                                DateObject object1 = new DateObject(strDate, 1, 0, tempFoods);
+
+                                 //for testing
+                                //for (FoodReport fr : object1.getFood()) {
+                                 //   fr.quantity = 5;
+                                //}
+
                                 for (OrderFood food : order.getFoods()) {
                                     object1.setRevenue(object1.getRevenue() + Integer.parseInt(food.getPrice()) * Integer.parseInt(food.getQuantity()));
+                                    String name = food.getName();
+                                    /*for (FoodReport fr : object1.getFood()) {
+                                        if (name.equals(fr.getName())) {
+                                            fr.setQuantity(fr.getQuantity() + Integer.parseInt(food.getQuantity()));
+                                        }
+                                    }*/
                                 }
+
+
                                 tempObjects.add(object1);
                             }
                         }
