@@ -69,7 +69,7 @@ public class ObjectAdapter extends RecyclerView.Adapter<ObjectAdapter.ViewHolder
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                UserInfo.instance.setFood(mObjects.get(holder.getAdapterPosition()).getFood());
+                UserInfo.instance.setDate(mObjects.get(holder.getAdapterPosition()).getDate());
                 Intent intent = new Intent(view.getContext(), CreateReport.class);
                 view.getContext().startActivity(intent);
             }

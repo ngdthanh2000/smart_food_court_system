@@ -10,6 +10,8 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.os.ParcelFileDescriptor;
+import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,6 +29,8 @@ import com.google.firebase.database.ValueEventListener;
 
 import org.w3c.dom.Text;
 
+import java.io.DataOutput;
+import java.sql.Array;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -100,15 +104,24 @@ public class ReportFragment extends Fragment {
 
         final RecyclerView recyclerView = (RecyclerView)view.findViewById(R.id.recyclerView);
 
-        readData(new MyCallback() {
-            @Override
-            public void onCallback(ArrayList<DateObject> value) {
 
+
+        readData(new MyCallback() {
+            ArrayList<DateObject> value1 = new ArrayList<DateObject>();
+            ArrayList<FoodReport> value2 = new ArrayList<FoodReport>();
+            @Override
+            public void onCallBack1(ArrayList<DateObject> value) {
                 ObjectAdapter adapter = new ObjectAdapter(value);
 
                 recyclerView.setAdapter(adapter);
             }
+
+            @Override
+            public void onCallBack2(ArrayList<FoodInfo> value) {
+                UserInfo.instance.setFood(value);
+            }
         });
+
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this.getContext()));
 
@@ -135,7 +148,7 @@ public class ReportFragment extends Fragment {
                         try {
                             Date date = sdf1.parse(order.getDate());
 
-                            String strDate = sdf2.format(date);
+                            final String strDate = sdf2.format(date);
 
                             boolean isExists = false;
 
@@ -145,53 +158,18 @@ public class ReportFragment extends Fragment {
                                     object.setNumberOfOrder(object.getNumberOfOrder() + 1);
                                     for (OrderFood food : order.getFoods()) {
                                         object.setRevenue(object.getRevenue() + Integer.parseInt(food.getPrice()) * Integer.parseInt(food.getQuantity()));
-                                         /*for (FoodReport fr : object.getFood()) {
-                                            if (food.getName().equals(fr.getName())) {
-                                                fr.setQuantity(fr.getQuantity() + Integer.parseInt(food.getQuantity()));
-                                            }
-                                        }*/
                                     }
+                                    break;
                                 }
                             }
 
                             if (!isExists) {
-                                final ArrayList<FoodReport> tempFoods = new ArrayList<FoodReport>();
-                                DatabaseReference reference = FirebaseDatabase.getInstance().getReference().child("Food");
-                                reference.orderByChild("Vendor").equalTo(UserInfo.instance.getUserName().substring(UserInfo.instance.getUserName().length() - 2)).addListenerForSingleValueEvent(new ValueEventListener() {
-                                    @Override
-                                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                        if (snapshot.getChildrenCount() > 0) {
-                                            for (DataSnapshot data : snapshot.getChildren()) {
-                                                FoodReport foodReport = data.getValue(FoodReport.class);
-                                                foodReport.setId(data.getKey());
-                                                tempFoods.add(foodReport);
-                                            }
-                                        }
-                                    }
 
-                                    @Override
-                                    public void onCancelled(@NonNull DatabaseError error) {
-
-                                    }
-                                });
-
-                                DateObject object1 = new DateObject(strDate, 1, 0, tempFoods);
-
-                                 //for testing
-                                //for (FoodReport fr : object1.getFood()) {
-                                 //   fr.quantity = 5;
-                                //}
+                                DateObject object1 = new DateObject(strDate, 1, 0);
 
                                 for (OrderFood food : order.getFoods()) {
                                     object1.setRevenue(object1.getRevenue() + Integer.parseInt(food.getPrice()) * Integer.parseInt(food.getQuantity()));
-                                    String name = food.getName();
-                                    /*for (FoodReport fr : object1.getFood()) {
-                                        if (name.equals(fr.getName())) {
-                                            fr.setQuantity(fr.getQuantity() + Integer.parseInt(food.getQuantity()));
-                                        }
-                                    }*/
                                 }
-
 
                                 tempObjects.add(object1);
                             }
@@ -200,10 +178,34 @@ public class ReportFragment extends Fragment {
                             Log.d("ERROR", e.getMessage());
                         }
                     }
-                    myCallback.onCallback(tempObjects);
+                    myCallback.onCallBack1(tempObjects);
                 }
             }
 
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference().child("Food");
+        reference.orderByChild("Vendor").equalTo(UserInfo.instance.getUserName().substring(UserInfo.instance.getUserName().length() - 2)).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+
+                if (snapshot.getChildrenCount() > 0) {
+                    ArrayList<FoodInfo> tempFoods = new ArrayList<FoodInfo>();
+                    for (DataSnapshot data : snapshot.getChildren()) {
+                        FoodInfo foodInfo = data.getValue(FoodInfo.class);
+                        tempFoods.add(foodInfo);
+                    }
+
+                    myCallback.onCallBack2(tempFoods);
+                }
+
+
+            }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {

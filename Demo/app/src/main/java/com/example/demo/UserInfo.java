@@ -12,7 +12,8 @@ public class UserInfo {
     String userName;
     Context context;
     Activity activity;
-    ArrayList<FoodReport> food;
+    List<FoodInfo> food;
+    private String date;
 
     public UserInfo() {
         if (instance == null) {
@@ -44,7 +45,15 @@ public class UserInfo {
         this.activity = activity;
     }
 
-    public ArrayList<FoodReport> getFood() { return this.food; }
+    public List<FoodInfo> getFood() { return this.food; }
 
-    public void setFood (ArrayList<FoodReport> food) { this.food = food; }
+    public void setFood (List<FoodInfo> food) { this.food = food; }
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
 }

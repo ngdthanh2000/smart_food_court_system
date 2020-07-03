@@ -1,6 +1,8 @@
 package com.example.demo;
 
-public class FoodReport {
+import java.util.List;
+
+class FoodInfo {
     private String Id;
     private String Name;
     private String Image;
@@ -10,7 +12,8 @@ public class FoodReport {
     private String Vendor;
     private int quantity;
 
-    public FoodReport() {}
+    public FoodInfo() {}
+
 
     public String getId() {
         return Id;
@@ -76,4 +79,30 @@ public class FoodReport {
         this.quantity = quantity;
     }
 
+}
+
+public class FoodReport {
+    private String date;
+    private List<FoodInfo> foods;
+
+    public FoodReport(String date, List<FoodInfo> foods) {
+        this.date = date;
+        this.foods = foods;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+
+    public List<FoodInfo> getFoods() {
+        return foods;
+    }
+
+    public void setFoods(List<FoodInfo> foods) {
+        this.foods = foods;
+    }
 }

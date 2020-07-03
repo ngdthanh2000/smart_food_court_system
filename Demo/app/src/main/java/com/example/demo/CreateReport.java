@@ -1,19 +1,27 @@
 package com.example.demo;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListAdapter;
 import android.widget.Toast;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Chunk;
 import com.itextpdf.text.Document;
@@ -34,7 +42,10 @@ import com.karumi.dexter.listener.single.PermissionListener;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class CreateReport extends AppCompatActivity {
@@ -120,13 +131,56 @@ public class CreateReport extends AppCompatActivity {
             table.addCell("Price");
             table.addCell("Revenue");
 
-            ArrayList<FoodReport> foodReports = UserInfo.instance.getFood();
+            List<FoodInfo> foodInfos = UserInfo.instance.getFood();
 
-            for (int i = 0; i < foodReports.size(); i++) {
-                table.addCell(foodReports.get(i).getName());
-                table.addCell(String.valueOf(foodReports.get(i).getQuantity()));
-                table.addCell(foodReports.get(i).getPrice());
-                table.addCell(String.valueOf(foodReports.get(i).getQuantity() * Integer.parseInt(foodReports.get(i).getPrice())));
+            final FoodReport foodReport = new FoodReport(UserInfo.instance.getDate(), foodInfos);
+
+            Log.d("DATE", UserInfo.instance.getDate());
+
+            DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("Vendors").child(UserInfo.instance.getUserName()).child("completed_orders");
+            ref.orderByChild("date").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    if (snapshot.getChildrenCount() > 0) {
+                        for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                            Order order = dataSnapshot.getValue(Order.class);
+                            SimpleDateFormat sdf1 = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy");
+                            SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd");
+                            try {
+                                Date date = sdf1.parse(order.getDate());
+                                String strDate = sdf2.format(date);
+
+                                if (strDate.equals(UserInfo.instance.getDate())) {
+                                    for (OrderFood orderFood: order.getFoods()) {
+                                        String fName = orderFood.getName();
+                                        for (FoodInfo fi : foodReport.getFoods()) {
+                                            if (fi.getName().equals(fName)) {
+                                                fi.setQuantity(fi.getQuantity() + Integer.parseInt(orderFood.getQuantity()));
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                            } catch (Exception e) {
+                                Log.d("ERROR", e.getMessage());
+                            }
+                        }
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+
+                }
+            });
+
+            for (int i = 0; i < foodReport.getFoods().size(); i++) {
+                if (foodReport.getFoods().get(i).getQuantity() != 0) {
+                    table.addCell(foodReport.getFoods().get(i).getName());
+                    table.addCell(String.valueOf(foodReport.getFoods().get(i).getQuantity()));
+                    table.addCell(foodReport.getFoods().get(i).getPrice());
+                    table.addCell(String.valueOf(foodReport.getFoods().get(i).getQuantity() * Integer.parseInt(foodReport.getFoods().get(i).getPrice())));
+                }
             }
 
             document.add(table);
