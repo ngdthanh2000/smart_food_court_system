@@ -1,13 +1,16 @@
 package com.example.demo;
 
 import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,10 +29,14 @@ import org.w3c.dom.Text;
 
 import java.sql.Timestamp;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -69,8 +76,6 @@ public class ReportFragment extends Fragment {
         return fragment;
     }
 
-    private UserInfo userInfo;
-    ArrayList<DateObject> objects;
 
 
     @Override
@@ -87,21 +92,25 @@ public class ReportFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.activity_recycler_view, container, false);
+        final View view = inflater.inflate(R.layout.activity_recycler_view, container, false);
 
-        RecyclerView recyclerView = (RecyclerView)view.findViewById(R.id.recyclerView);
+        final ArrayList<DateObject> objects = new ArrayList<>();
 
-        objects = new ArrayList<DateObject>();
-        for (int i = 0; i < 10; i++) {
-            objects.add(new DateObject("20/10/2020", i, i));
-        }
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("Vendors").child(UserInfo.instance.getUserName()).child("completed_orders");
 
+        final RecyclerView recyclerView = (RecyclerView)view.findViewById(R.id.recyclerView);
 
-        ObjectAdapter adapter = new ObjectAdapter(objects);
+        readData(new MyCallback() {
+            @Override
+            public void onCallback(ArrayList<DateObject> value) {
+                ObjectAdapter adapter = new ObjectAdapter(value);
 
-        recyclerView.setAdapter(adapter);
+                recyclerView.setAdapter(adapter);
+            }
+        });
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this.getContext()));
+
 
         //setTotalOrder(textViewNumberOfOrder, textViewDate, UserInfo.instance.getUserName());
 
@@ -109,22 +118,52 @@ public class ReportFragment extends Fragment {
 
     }
 
-    void setTotalOrder(final TextView textViewNo, final TextView textViewDate, String vendorId) {
-
-        final DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("Vendors").child(vendorId).child("completed_orders");
-        ref.addValueEventListener(new ValueEventListener() {
+    private void readData(final MyCallback myCallback) {
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("Vendors").child(UserInfo.instance.getUserName()).child("completed_orders");
+        ref.orderByChild("date").addListenerForSingleValueEvent(new ValueEventListener() {
+            @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot data : snapshot.getChildren()) {
-                    String pattern = "dd/MM/yyyy";
-                    DateFormat df = new SimpleDateFormat(pattern);
-                    Date date = (Date) data.child("dated").getValue();
-                    textViewDate.setText("Date: " + df.format(date));
-                    break;
-                }
+                if (snapshot.getChildrenCount() > 0) {
+                    ArrayList<DateObject> tempObjects = new ArrayList<DateObject>();
+                    for (DataSnapshot data : snapshot.getChildren()) {
+                        // Date date = (Date) data.child("dated").getValue().toString();
+                        Order order = data.getValue(Order.class);
+                        SimpleDateFormat sdf1 = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy");
+                        SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd");
+                        try {
+                            Date date = sdf1.parse(order.getDate());
 
-                textViewNo.setText("Total orders: " + String.valueOf(snapshot.getChildrenCount()));
+                            String strDate = sdf2.format(date);
+
+                            boolean isExists = false;
+
+                            for (DateObject object : tempObjects) {
+                                if (strDate.equals(object.getDate())) {
+                                    isExists = true;
+                                    object.setNumberOfOrder(object.getNumberOfOrder() + 1);
+                                    for (OrderFood food : order.getFoods()) {
+                                        object.setRevenue(object.getRevenue() + Integer.parseInt(food.getPrice()) * Integer.parseInt(food.getQuantity()));
+                                    }
+                                }
+                            }
+
+                            if (!isExists) {
+                                DateObject object1 = new DateObject(strDate, 1, 0);
+                                for (OrderFood food : order.getFoods()) {
+                                    object1.setRevenue(object1.getRevenue() + Integer.parseInt(food.getPrice()) * Integer.parseInt(food.getQuantity()));
+                                }
+                                tempObjects.add(object1);
+                            }
+                        }
+                        catch (Exception e) {
+                            Log.d("ERROR", e.getMessage());
+                        }
+                    }
+                    myCallback.onCallback(tempObjects);
+                }
             }
+
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {

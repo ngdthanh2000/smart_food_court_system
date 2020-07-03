@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -57,10 +58,17 @@ public class ObjectAdapter extends RecyclerView.Adapter<ObjectAdapter.ViewHolder
         TextView textView = holder.textViewDate;
         textView.setText(object.getDate());
         TextView textView1 = holder.textViewNumberOfOrder;
-        textView1.setText(String.valueOf(object.getNumberOfOrder()));
+        textView1.setText("Total Orders: " + String.valueOf(object.getNumberOfOrder()));
         TextView textView2 = holder.textViewRevenue;
-        textView2.setText(String.valueOf(object.getRevenue()));
+        textView2.setText("Revenue: " + String.valueOf(object.getRevenue()));
         Button button = holder.btnReport;
+
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(view.getContext(), "REPORT", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     @Override
