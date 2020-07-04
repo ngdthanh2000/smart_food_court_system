@@ -28,12 +28,16 @@ import com.karumi.dexter.listener.PermissionGrantedResponse;
 import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.single.PermissionListener;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -79,7 +83,6 @@ public class CreateReport extends AppCompatActivity {
             new File(path).delete();
         }
 
-        InputStream inputStream = getAssets().open("movies.html");
         // int size = inputStream.available();
 
         //byte[] buffer = new byte[size];
@@ -88,11 +91,12 @@ public class CreateReport extends AppCompatActivity {
 
         //String str = new String(buffer);
 
+        /*inputStream = getAssets().open("movies.html");
 
         ConverterProperties converterProperties = new ConverterProperties();
         HtmlConverter.convertToPdf(inputStream, new FileOutputStream(path), converterProperties);
 
-        openPDF(UserInfo.instance.getContext());
+        openPDF(UserInfo.instance.getContext());*/
 
 
 
@@ -110,7 +114,7 @@ public class CreateReport extends AppCompatActivity {
             titlePaint.setTextSize(70);
             canvas.drawText(vendorName.toString(), 270, 270, titlePaint);*/
 
-            /* Log.d("DATE", UserInfo.instance.getDate());
+            Log.d("DATE", UserInfo.instance.getDate());
 
             readData(new MyCallback() {
                 @Override
@@ -120,55 +124,74 @@ public class CreateReport extends AppCompatActivity {
 
                 @Override
                 public void onCallBack2(List<FoodInfo> value) throws Exception {
+
+                    InputStream inputStream = getAssets().open("pdfdata.html");
+                    String str = "";
+                    StringBuffer buf = new StringBuffer();
+                    try {
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+                        if (inputStream != null) {
+                            while ((str = reader.readLine()) != null) {
+                                buf.append(str + "\n");
+                            }
+                        }
+                    } finally {
+                        try {
+                            inputStream.close();
+                        } catch (Throwable ignore) {}
+
+                    }
+
                     UserInfo.instance.setFood(value);
                     FoodReport foodReport = new FoodReport(UserInfo.instance.getDate(), UserInfo.instance.getFood());
 
-                    Document document = new Document();
-                    PdfWriter.getInstance(document, new FileOutputStream(path));
 
-                    document.open();
-
-                    document.setPageSize(PageSize.A4);
-                    document.addCreationDate();
-                    document.addCreator("Thanh Nguyen");
-                    document.addAuthor("FCFS");
-
-                    BaseFont fontName = BaseFont.createFont("assets/fonts/times.ttf", "UTF-8", BaseFont.EMBEDDED);
-                    float titleSize = 26.0f;
-                    float headerSize = 20.0f;
-                    float subHeaderSize = 16.0f;
-                    float dataSize = 12.0f;
-
-                    Font titleFont = new Font(fontName, titleSize, Font.NORMAL, BaseColor.BLACK);
-                    Font headerFont = new Font(fontName, headerSize, Font.NORMAL, BaseColor.BLACK);
-
-                    Font dataFont = new Font(fontName, dataSize, Font.NORMAL, BaseColor.BLACK);
-
-                    addNewItem(document, "Order Details", Element.ALIGN_CENTER, titleFont);
-
-                    PdfPTable table = new PdfPTable(4);
-
-                    addNewCeilItem(table, "Food Name", Element.ALIGN_CENTER, headerFont);
-                    addNewCeilItem(table, "Quantity", Element.ALIGN_MIDDLE, headerFont);
-                    addNewCeilItem(table, "Price", Element.ALIGN_MIDDLE, headerFont);
-                    addNewCeilItem(table, "Revenue", Element.ALIGN_MIDDLE, headerFont);
-
+                    int no = 1;
+                    int totalQuantity = 0;
+                    long totalPrice = 0;
                     for (int i = 0; i < foodReport.getFoods().size(); i++) {
                         if (foodReport.getFoods().get(i).getQuantity() != 0) {
-                            table.addCell(foodReport.getFoods().get(i).getName());
-                            table.addCell(String.valueOf(foodReport.getFoods().get(i).getQuantity()));
-                            table.addCell(foodReport.getFoods().get(i).getPrice());
-                            table.addCell(String.valueOf(foodReport.getFoods().get(i).getQuantity() * Integer.parseInt(foodReport.getFoods().get(i).getPrice())));
+                            buf.append("<tr class=\"movierow\"><td class=\"column1\">");
+                            buf.append(no);
+                            buf.append("</td><td class=\"column2\">");
+                            buf.append(foodReport.getFoods().get(i).getName());
+                            buf.append("</td><td class=\"column3\">");
+                            buf.append(foodReport.getFoods().get(i).getPrice());
+                            buf.append("</td><td class=\"column4\">");
+                            buf.append(foodReport.getFoods().get(i).getQuantity());
+                            totalQuantity += foodReport.getFoods().get(i).getQuantity();
+                            buf.append("</td><td class=\"column5\">");
+                            buf.append(foodReport.getFoods().get(i).getQuantity() * Integer.parseInt(foodReport.getFoods().get(i).getPrice()));
+                            totalPrice += foodReport.getFoods().get(i).getQuantity() * Integer.parseInt(foodReport.getFoods().get(i).getPrice());
+                            buf.append("</td></tr>" + "\n");
+                            no++;
                         }
                     }
 
-                    document.add(table);
+                    buf.append("<tr class=\"movierow\"><th colspan=\"3\">TOTAL</th><th class=\"column4\">");
+                    buf.append(totalQuantity);
+                    buf.append("</th><th class=\"column5\">");
+                    buf.append(totalPrice);
+                    buf.append("</th></tr>" + "\n");
 
-                    document.close();
+                    buf.append("</table>" + "\n" + "</body>" + "\n" + "</html>");
+
+                    Log.d("HTML", buf.toString());
+
+                    byte[] bytes = buf.toString().getBytes();
+
+                    InputStream data = new ByteArrayInputStream(bytes);
+
+                    ConverterProperties converterProperties = new ConverterProperties();
+                    HtmlConverter.convertToPdf(data, new FileOutputStream(path), converterProperties);
+
+                    //document.add(table);
+
+                    //document.close();
 
                     openPDF(UserInfo.instance.getContext());
                 }
-            });*/
+            });
 
 
             //addNewItem(document, "Food Info", Element.ALIGN_LEFT, headerFont);
