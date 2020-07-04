@@ -117,7 +117,7 @@ public class ReportFragment extends Fragment {
             }
 
             @Override
-            public void onCallBack2(ArrayList<FoodInfo> value) {
+            public void onCallBack2(List<FoodInfo> value) {
                 UserInfo.instance.setFood(value);
             }
         });
@@ -195,13 +195,17 @@ public class ReportFragment extends Fragment {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
 
                 if (snapshot.getChildrenCount() > 0) {
-                    ArrayList<FoodInfo> tempFoods = new ArrayList<FoodInfo>();
+                    List<FoodInfo> tempFoods = new ArrayList<FoodInfo>();
                     for (DataSnapshot data : snapshot.getChildren()) {
                         FoodInfo foodInfo = data.getValue(FoodInfo.class);
                         tempFoods.add(foodInfo);
                     }
 
-                    myCallback.onCallBack2(tempFoods);
+                    try {
+                        myCallback.onCallBack2(tempFoods);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
 
 

@@ -5,34 +5,22 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
 
 import android.Manifest;
-import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.AssetFileDescriptor;
+import android.content.res.AssetManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
-import android.widget.ListAdapter;
-import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.itextpdf.text.BaseColor;
-import com.itextpdf.text.Chunk;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.Element;
-import com.itextpdf.text.Font;
-import com.itextpdf.text.PageSize;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.pdf.BaseFont;
-import com.itextpdf.text.pdf.PdfPTable;
-import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.html2pdf.ConverterProperties;
+import com.itextpdf.html2pdf.HtmlConverter;
+
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.PermissionToken;
 import com.karumi.dexter.listener.PermissionDeniedResponse;
@@ -41,10 +29,11 @@ import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.single.PermissionListener;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.text.ParseException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -62,7 +51,11 @@ public class CreateReport extends AppCompatActivity {
                 .withListener(new PermissionListener() {
                     @Override
                     public void onPermissionGranted(PermissionGrantedResponse response) {
-                        createPDFFile(Common.getAppPath(UserInfo.instance.getContext()) + "test.pdf");
+                        try {
+                            createPDFFile(Common.getAppPath(UserInfo.instance.getContext()) + "test.pdf");
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
 
                     @Override
@@ -81,13 +74,28 @@ public class CreateReport extends AppCompatActivity {
 
     }
 
-    private void createPDFFile(String path) {
+    private void createPDFFile(final String path) throws IOException {
         if (new File(path).exists()) {
             new File(path).delete();
         }
 
+        InputStream inputStream = getAssets().open("movies.html");
+        // int size = inputStream.available();
 
-        try {
+        //byte[] buffer = new byte[size];
+        //inputStream.read(buffer);
+        //inputStream.close();
+
+        //String str = new String(buffer);
+
+
+        ConverterProperties converterProperties = new ConverterProperties();
+        HtmlConverter.convertToPdf(inputStream, new FileOutputStream(path), converterProperties);
+
+        openPDF(UserInfo.instance.getContext());
+
+
+
 
             /*PdfDocument myPdfDocument = new PdfDocument();
             Paint myPaint = new Paint();
@@ -102,88 +110,66 @@ public class CreateReport extends AppCompatActivity {
             titlePaint.setTextSize(70);
             canvas.drawText(vendorName.toString(), 270, 270, titlePaint);*/
 
-            Document document = new Document();
-            PdfWriter.getInstance(document, new FileOutputStream(path));
+            /* Log.d("DATE", UserInfo.instance.getDate());
 
-            document.open();
-
-            document.setPageSize(PageSize.A4);
-            document.addCreationDate();
-            document.addCreator("Thanh Nguyen");
-            document.addAuthor("FCFS");
-
-            BaseFont fontName = BaseFont.createFont("assets/fonts/times.ttf", "UTF-8", BaseFont.EMBEDDED);
-            float titleSize = 26.0f;
-            float headerSize = 20.0f;
-            float subHeaderSize = 16.0f;
-            float dataSize = 12.0f;
-
-            Font titleFont = new Font(fontName, titleSize, Font.NORMAL, BaseColor.BLACK);
-            Font headerFont = new Font(fontName, headerSize, Font.NORMAL, BaseColor.BLACK);
-
-            Font dataFont = new Font(fontName, dataSize, Font.NORMAL, BaseColor.BLACK);
-
-            addNewItem(document, "Order Details", Element.ALIGN_CENTER, titleFont);
-
-            PdfPTable table = new PdfPTable(4);
-            table.addCell("Food Name");
-            table.addCell("Quantity");
-            table.addCell("Price");
-            table.addCell("Revenue");
-
-            List<FoodInfo> foodInfos = UserInfo.instance.getFood();
-
-            final FoodReport foodReport = new FoodReport(UserInfo.instance.getDate(), foodInfos);
-
-            Log.d("DATE", UserInfo.instance.getDate());
-
-            DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("Vendors").child(UserInfo.instance.getUserName()).child("completed_orders");
-            ref.orderByChild("date").addListenerForSingleValueEvent(new ValueEventListener() {
+            readData(new MyCallback() {
                 @Override
-                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    if (snapshot.getChildrenCount() > 0) {
-                        for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
-                            Order order = dataSnapshot.getValue(Order.class);
-                            SimpleDateFormat sdf1 = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy");
-                            SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd");
-                            try {
-                                Date date = sdf1.parse(order.getDate());
-                                String strDate = sdf2.format(date);
+                public void onCallBack1(ArrayList<DateObject> value) {
+                    return;
+                }
 
-                                if (strDate.equals(UserInfo.instance.getDate())) {
-                                    for (OrderFood orderFood: order.getFoods()) {
-                                        String fName = orderFood.getName();
-                                        for (FoodInfo fi : foodReport.getFoods()) {
-                                            if (fi.getName().equals(fName)) {
-                                                fi.setQuantity(fi.getQuantity() + Integer.parseInt(orderFood.getQuantity()));
-                                                break;
-                                            }
-                                        }
-                                    }
-                                }
-                            } catch (Exception e) {
-                                Log.d("ERROR", e.getMessage());
-                            }
+                @Override
+                public void onCallBack2(List<FoodInfo> value) throws Exception {
+                    UserInfo.instance.setFood(value);
+                    FoodReport foodReport = new FoodReport(UserInfo.instance.getDate(), UserInfo.instance.getFood());
+
+                    Document document = new Document();
+                    PdfWriter.getInstance(document, new FileOutputStream(path));
+
+                    document.open();
+
+                    document.setPageSize(PageSize.A4);
+                    document.addCreationDate();
+                    document.addCreator("Thanh Nguyen");
+                    document.addAuthor("FCFS");
+
+                    BaseFont fontName = BaseFont.createFont("assets/fonts/times.ttf", "UTF-8", BaseFont.EMBEDDED);
+                    float titleSize = 26.0f;
+                    float headerSize = 20.0f;
+                    float subHeaderSize = 16.0f;
+                    float dataSize = 12.0f;
+
+                    Font titleFont = new Font(fontName, titleSize, Font.NORMAL, BaseColor.BLACK);
+                    Font headerFont = new Font(fontName, headerSize, Font.NORMAL, BaseColor.BLACK);
+
+                    Font dataFont = new Font(fontName, dataSize, Font.NORMAL, BaseColor.BLACK);
+
+                    addNewItem(document, "Order Details", Element.ALIGN_CENTER, titleFont);
+
+                    PdfPTable table = new PdfPTable(4);
+
+                    addNewCeilItem(table, "Food Name", Element.ALIGN_CENTER, headerFont);
+                    addNewCeilItem(table, "Quantity", Element.ALIGN_MIDDLE, headerFont);
+                    addNewCeilItem(table, "Price", Element.ALIGN_MIDDLE, headerFont);
+                    addNewCeilItem(table, "Revenue", Element.ALIGN_MIDDLE, headerFont);
+
+                    for (int i = 0; i < foodReport.getFoods().size(); i++) {
+                        if (foodReport.getFoods().get(i).getQuantity() != 0) {
+                            table.addCell(foodReport.getFoods().get(i).getName());
+                            table.addCell(String.valueOf(foodReport.getFoods().get(i).getQuantity()));
+                            table.addCell(foodReport.getFoods().get(i).getPrice());
+                            table.addCell(String.valueOf(foodReport.getFoods().get(i).getQuantity() * Integer.parseInt(foodReport.getFoods().get(i).getPrice())));
                         }
                     }
+
+                    document.add(table);
+
+                    document.close();
+
+                    openPDF(UserInfo.instance.getContext());
                 }
+            });*/
 
-                @Override
-                public void onCancelled(@NonNull DatabaseError error) {
-
-                }
-            });
-
-            for (int i = 0; i < foodReport.getFoods().size(); i++) {
-                if (foodReport.getFoods().get(i).getQuantity() != 0) {
-                    table.addCell(foodReport.getFoods().get(i).getName());
-                    table.addCell(String.valueOf(foodReport.getFoods().get(i).getQuantity()));
-                    table.addCell(foodReport.getFoods().get(i).getPrice());
-                    table.addCell(String.valueOf(foodReport.getFoods().get(i).getQuantity() * Integer.parseInt(foodReport.getFoods().get(i).getPrice())));
-                }
-            }
-
-            document.add(table);
 
             //addNewItem(document, "Food Info", Element.ALIGN_LEFT, headerFont);
             //addLineSeparator(document);
@@ -192,7 +178,7 @@ public class CreateReport extends AppCompatActivity {
                 addNewItem(document, text, Element.ALIGN_LEFT, dataFont);
             }*/
 
-            document.close();
+
 
             //addLineSeparator(document);
 
@@ -203,23 +189,72 @@ public class CreateReport extends AppCompatActivity {
             myPdfDocument.writeTo(new FileOutputStream(path));
             myPdfDocument.close();*/
 
-            Toast.makeText(this, "Success", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(this, "Success", Toast.LENGTH_SHORT).show();
 
             //printPDF();
-
-            openPDF(UserInfo.instance.getContext());
-
-        } catch (Exception e) {
-            Toast.makeText(CreateReport.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
-        }
     }
 
-    private void addNewItem(Document document, String text, int align, Font font) throws DocumentException {
+
+    private void readData(final MyCallback myCallback) {
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("Vendors").child(UserInfo.instance.getUserName()).child("completed_orders");
+        ref.orderByChild("date").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                List<FoodInfo> foodInfos = UserInfo.instance.getFood();
+                if (snapshot.getChildrenCount() > 0) {
+                    for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                        Order order = dataSnapshot.getValue(Order.class);
+                        SimpleDateFormat sdf1 = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy");
+                        SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd");
+                        try {
+                            Date date = sdf1.parse(order.getDate());
+                            String strDate = sdf2.format(date);
+
+                            if (strDate.equals(UserInfo.instance.getDate())) {
+                                for (OrderFood orderFood: order.getFoods()) {
+                                    String fName = orderFood.getName();
+                                    for (FoodInfo fi : foodInfos) {
+                                        if (fi.getName().equals(fName)) {
+                                            fi.setQuantity(fi.getQuantity() + Integer.parseInt(orderFood.getQuantity()));
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        } catch (Exception e) {
+                            Log.d("ERROR", e.getMessage());
+                        }
+                    }
+                    try {
+                        myCallback.onCallBack2(foodInfos);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
+    /*private void addNewItem(Document document, String text, int align, Font font) throws DocumentException {
         Chunk chunk = new Chunk(text, font);
         Paragraph paragraph = new Paragraph(chunk);
         paragraph.setAlignment(align);
         document.add(paragraph);
     }
+
+
+    private void addNewCeilItem(PdfPTable table, String text, int align, Font font) {
+        Paragraph paragraph = new Paragraph(text, font);
+        PdfPCell cell = new PdfPCell();
+        cell.setHorizontalAlignment(align);
+        cell.addElement(paragraph);
+        table.addCell(cell);
+    }*/
 
     private void openPDF(Context context) {
         File file = new File(Common.getAppPath(UserInfo.instance.getContext())+"test.pdf");
