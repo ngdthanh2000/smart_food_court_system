@@ -9,9 +9,10 @@
     >
 
     <ImageView
+        android:id="@+id/foodView"
         android:layout_width="60dp"
         android:layout_height="match_parent"
-        android:src="@android:drawable/ic_menu_gallery" />
+         />
 
     <LinearLayout
         android:orientation="vertical"
