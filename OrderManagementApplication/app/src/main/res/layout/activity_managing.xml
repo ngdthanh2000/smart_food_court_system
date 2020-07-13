@@ -7,8 +7,9 @@
     android:orientation="vertical"
     tools:context=".ManagingActivity">
 
-    <ListView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/lsRequest"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:scrollbars="vertical"/>
 </LinearLayout>

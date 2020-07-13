@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
@@ -14,18 +13,33 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
+import kotlinx.android.synthetic.main.activity_login.*
 
 class LoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
+        var username: EditText = findViewById(R.id.edtUsername)
+        var password: EditText = findViewById(R.id.edtPassword)
+        //region Get previous session preferences
+        val pref = getSharedPreferences("PREF", Context.MODE_PRIVATE)
+        boxRemember.isChecked = pref.getBoolean("rememberBox",true)
+        if (boxRemember.isChecked){
+            username.setText(pref.getString("savedUsername", "none"))
+            password.setText(pref.getString("savedPassword", "none"))
+        }
+        else{
+            username.setText("")
+            password.setText("")
+        }
+        //endregion
+
         var btnLogin = findViewById<Button>(R.id.btnLogin)
 
         btnLogin.setOnClickListener {
-            var username: EditText = findViewById(R.id.edtUsername)
-            var passwd: EditText = findViewById(R.id.edtPassword)
-            var userInput = LoginInfo(username.text.toString(), passwd.text.toString())
+            pref.edit().putBoolean("rememberBox", boxRemember.isChecked).apply()
+            var userInput = LoginInfo(username.text.toString(), password.text.toString())
             authorize(userInput)
         }
         /*btnLogin.setOnLongClickListener{
@@ -39,7 +53,10 @@ class LoginActivity : AppCompatActivity() {
         startActivity(intent)
     }
     private fun loginSuccessfully(){
-
+        /*var username: EditText = findViewById(R.id.edtUsername)
+        var password: EditText = findViewById(R.id.edtPassword)
+        username.setText("")
+        password.setText("")*/
         Toast.makeText(this, "Login successfully", Toast.LENGTH_SHORT).show()
 
         loadOrderActivity()
@@ -64,6 +81,14 @@ class LoginActivity : AppCompatActivity() {
                     val pref = getSharedPreferences("PREF", Context.MODE_PRIVATE)
                     // Save vendor's username and id for later use
                     pref.edit().putString("username", input.username).apply()
+                    if (boxRemember.isChecked) {
+                        pref.edit().putString("savedUsername", input.username).apply()
+                        pref.edit().putString("savedPassword", input.password).apply()
+                    }
+                    else {
+                        pref.edit().putString("savedUsername", "none").apply()
+                        pref.edit().putString("savedPassword", "none").apply()
+                    }
                     pref.edit().putString("vendor_id", snapshot.child(input.username).child("id").value.toString()).apply()
                     //Log.d("vendor_id", pref.getString("vendor_id", "00").toString())
                     loginSuccessfully()
