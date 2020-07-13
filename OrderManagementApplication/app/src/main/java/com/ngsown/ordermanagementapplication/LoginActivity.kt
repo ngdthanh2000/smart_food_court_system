@@ -50,9 +50,8 @@ class LoginActivity : AppCompatActivity() {
     private fun authorize(input: LoginInfo) {
         //Log.d("authorizing",input.username + " " + input.password)
         var firebaseDB: DatabaseReference = Firebase.database.reference
-        var customers = firebaseDB.child("Vendors").ref
-        //var customers = firebaseDB.ref
-        customers.addValueEventListener( object : ValueEventListener {
+        var vendorsDB = firebaseDB.child("Vendors").ref
+        vendorsDB.addValueEventListener( object : ValueEventListener {
             override fun onCancelled(error: DatabaseError) {
                 TODO("Not yet implemented")
             }
@@ -63,9 +62,10 @@ class LoginActivity : AppCompatActivity() {
                 //Log.d("pass", snapshot.child(input.username).child("password").getValue().toString())
                 if (snapshot.child(input.username).key.toString() == input.username && snapshot.child(input.username).child("password").getValue().toString() == input.password) {
                     val pref = getSharedPreferences("PREF", Context.MODE_PRIVATE)
+                    // Save vendor's username and id for later use
                     pref.edit().putString("username", input.username).apply()
                     pref.edit().putString("vendor_id", snapshot.child(input.username).child("id").value.toString()).apply()
-                    Log.d("vendor_id", pref.getString("vendor_id", "00").toString())
+                    //Log.d("vendor_id", pref.getString("vendor_id", "00").toString())
                     loginSuccessfully()
                 }
                 else

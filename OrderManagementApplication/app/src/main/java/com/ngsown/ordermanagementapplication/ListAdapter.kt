@@ -11,7 +11,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.TextView
-import android.widget.Toast
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
@@ -21,56 +20,60 @@ import com.google.firebase.ktx.Firebase
 
 
 class ListAdapter(var ac: Activity, var list: ArrayList<Request>) : BaseAdapter() {
-    var activity: Activity = Activity()
-    var requestList = arrayListOf<Request>()
+    private var activity: Activity = Activity()
+    private var requestList = arrayListOf<Request>()
     init {
         activity = ac
         requestList = list
     }
     @SuppressLint("ViewHolder")
     //val pref = g("PREF", Context.MODE_PRIVATE)
-    fun showCompleteDialog(p0: Int){
+    private fun updateDatabase(itemIndex: Int){
+        var completedOrder = CompletedOrder(list[itemIndex].foods, list[itemIndex].id, list[itemIndex].owner,
+            list[itemIndex].date)
+        var firebaseDB: DatabaseReference = Firebase.database.reference
+        val pref = ac.getSharedPreferences("PREF", Context.MODE_PRIVATE)
+        // Reference to vendor database
+        var ordersDB = firebaseDB.child("Vendors").child(pref.getString("username", "null").toString()).child("completed_orders").ref
+
+        ordersDB.push().setValue(completedOrder)
+        // Remove completed from view by deleting it from database
+        var requestDB = firebaseDB.child("Request").child(list[itemIndex].request_key).child("foods").ref
+
+        requestDB.addValueEventListener(object : ValueEventListener{
+            override fun onCancelled(error: DatabaseError) {
+                TODO("Not yet implemented")
+            }
+
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (!snapshot.hasChildren()){
+                    var firebaseDB: DatabaseReference = Firebase.database.reference
+                    var request = firebaseDB.child("Request").child(list[itemIndex].request_key).ref
+                    request.removeValue()
+                }
+            }
+
+        })
+        for (food in list[itemIndex].food_index){
+            requestDB.child(food).removeValue()
+        }
+    }
+    private fun showCompleteDialog(itemIndex: Int){
         var dialog = AlertDialog.Builder(ac)
         dialog.setTitle("Confirmation")
         dialog.setMessage("Complete this order and notify customer?")
         dialog.setPositiveButton("Yes",
             DialogInterface.OnClickListener { dialog, which ->
-                // Push data to database
-                var completedOrder = CompletedOrder(list[p0].foods, list[p0].id, list[p0].owner,
-                    list[p0].date)
-                var firebaseDB: DatabaseReference = Firebase.database.reference
-                val pref = ac.getSharedPreferences("PREF", Context.MODE_PRIVATE)
-
-                var ordersDB = firebaseDB.child("Vendors").child(pref.getString("username", "null").toString()).child("completed_orders").ref
-
-                ordersDB.push().setValue(completedOrder)
-
-                var requestDB = firebaseDB.child("Request").child(list[p0].request_key).child("foods").ref
-
-                requestDB.addValueEventListener(object : ValueEventListener{
-                    override fun onCancelled(error: DatabaseError) {
-                        TODO("Not yet implemented")
-                    }
-
-                    override fun onDataChange(snapshot: DataSnapshot) {
-                        if (!snapshot.hasChildren()){
-                            var firebaseDB: DatabaseReference = Firebase.database.reference
-                            var request = firebaseDB.child("Request").child(list[p0].request_key).ref
-                            request.removeValue()
-                        }
-                    }
-
-                })
-                for (food in list[p0].food_index){
-                    requestDB.child(food).removeValue()
-                }
+                // Push complete order to database and remove it from view
+                updateDatabase(itemIndex)
             })
         dialog.setNegativeButton("No",
             DialogInterface.OnClickListener { dialog, which ->
+                // Do nothing
             })
         dialog.show()
     }
-    fun showPrepareDialog(p0: Int, view: View){
+    private fun showPrepareDialog(p0: Int, view: View){
         var dialog = AlertDialog.Builder(ac)
         dialog.setTitle("Confirmation")
         dialog.setMessage("Start preparing this order?")

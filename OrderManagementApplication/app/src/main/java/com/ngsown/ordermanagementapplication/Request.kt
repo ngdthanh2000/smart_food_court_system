@@ -7,6 +7,6 @@ data class Request (
     var owner: String = "",
     var status: String = "",
     var total: String = "",
-    var request_key: String = "",
-    var food_index: ArrayList<String> = ArrayList()
+    var request_key: String = "", // Needed for tracing back
+    var food_index: ArrayList<String> = ArrayList() // and delete
 )
