@@ -1,69 +1,69 @@
 package com.example.demo;
 
 public class Food {
-    private String Description;
-    private String Discount;
-    private String Image;
-    private String Name;
-    private String Price;
-    private String Vendor;
+    private String description;
+    private int discount;
+    private String linkImage;
+    private String name;
+    private int price;
+    private String vendor;
 
     public Food(){}
 
-    public Food(String description, String discount, String image, String name, String price, String vendor) {
-        this.Description = description;
-        this.Discount = discount;
-        this.Image = image;
-        this.Name = name;
-        this.Price = price;
-        this.Vendor = vendor;
+    public Food(String description, int discount, String linkImage, String name, int price, String vendor) {
+        this.description = description;
+        this.discount = discount;
+        this.linkImage = linkImage;
+        this.name = name;
+        this.price = price;
+        this.vendor = vendor;
     }
 
     public String getDescription() {
-        return Description;
+        return description;
     }
 
     public void setDescription(String description) {
-        this.Description = description;
+        this.description = description;
     }
 
-    public String getDiscount() {
-        return Discount;
+    public int getDiscount() {
+        return discount;
     }
 
-    public void setDiscount(String discount) {
-        this.Discount = discount;
+    public void setDiscount(int discount) {
+        this.discount = discount;
     }
 
-    public String getImage() {
-        return Image;
+    public String getLinkImage() {
+        return linkImage;
     }
 
-    public void setImage(String image) {
-        this.Image = image;
+    public void setLinkImage(String linkImage) {
+        this.linkImage = linkImage;
     }
 
     public String getName() {
-        return Name;
+        return name;
     }
 
     public void setName(String name) {
-        this.Name = name;
+        this.name = name;
     }
 
-    public String getPrice() {
-        return Price;
+    public int getPrice() {
+        return price;
     }
 
-    public void setPrice(String price) {
-        this.Price = price;
+    public void setPrice(int price) {
+        this.price = price;
     }
 
     public String getVendor() {
-        return Vendor;
+        return vendor;
     }
 
     public void setVendor(String vendor) {
-        this.Vendor = vendor;
+        this.vendor = vendor;
     }
 }
