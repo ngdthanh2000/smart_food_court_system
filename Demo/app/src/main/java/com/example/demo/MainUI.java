@@ -7,10 +7,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.database.DataSnapshot;
@@ -22,11 +25,18 @@ import com.google.firebase.database.ValueEventListener;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
 public class MainUI extends AppCompatActivity implements  NavigationView.OnNavigationItemSelectedListener{
     private DrawerLayout drawer;
+
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,6 +45,22 @@ public class MainUI extends AppCompatActivity implements  NavigationView.OnNavig
         readData(new MyCallback2() {
             @Override
             public void onCallBack3(List<FoodReport> value) {
+                final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                Collections.sort(value, new Comparator<FoodReport>() {
+                    @Override
+                    public int compare(FoodReport foodReport, FoodReport t1) {
+                        int ret = 0;
+                        try {
+                            ret = sdf.parse(foodReport.getDate()).compareTo(sdf.parse(t1.getDate()));
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
+                        return ret;
+                    }
+                });
+
+                Collections.reverse(value);
+
                 UserInfo.instance.setFoodReports(value);
             }
         });
@@ -65,6 +91,9 @@ public class MainUI extends AppCompatActivity implements  NavigationView.OnNavig
                 if (snapshot.getChildrenCount() > 0) {
                     for (DataSnapshot data : snapshot.getChildren()) {
                         Order order = data.getValue(Order.class);
+                        for (OrderFood orderFood : order.getFoods()) {
+                            Log.d("ORDERFOOD", order.getDate() + " " + orderFood.getName() + " " + orderFood.getQuantity());
+                        }
                         SimpleDateFormat sdf1 = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy");
                         SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd");
                         try {
@@ -72,39 +101,34 @@ public class MainUI extends AppCompatActivity implements  NavigationView.OnNavig
                             String strDate = sdf2.format(date);
 
                             boolean isExists = false;
+                            FoodReport foodReport = null;
 
                             for (FoodReport food : foodReports) {
                                 if (strDate.equals(food.getDate())) {
                                     isExists = true;
-                                    for (OrderFood orderFood : order.getFoods()) {
-                                        for (FoodInfo foodInfo : food.getFoods()) {
-                                            if (orderFood.getName().equals(foodInfo.getName())) {
-                                                foodInfo.setQuantity(foodInfo.getQuantity() + Integer.parseInt(orderFood.getQuantity()));
-                                                break;
-                                            }
-                                        }
-                                    }
+                                    foodReport = food;
                                 }
-                                break;
                             }
 
                             if (!isExists) {
-
-                                FoodReport foodReport = new FoodReport(strDate, foodInfos);
-                                for (OrderFood orderFood : order.getFoods()) {
-                                    for (FoodInfo foodInfo : foodReport.getFoods()) {
-                                        if (foodInfo.getName().equals(orderFood.getName())) {
-                                            foodInfo.setQuantity(foodInfo.getQuantity() + Integer.parseInt(orderFood.getQuantity()));
-                                            break;
-                                        }
-                                    }
+                                List<FoodInfo> foodInfos1 = new ArrayList<>();
+                                for (int i = 0 ; i < foodInfos.size(); i++) {
+                                    foodInfos1.add(new FoodInfo(foodInfos.get(i)));
                                 }
-
-                                for (int i = 0; i < foodReport.getFoods().size(); i++) {
-                                    Log.d("DATA", foodReport.getDate() + " " + foodReport.getFoods().get(i).getName() + " " + foodReport.getFoods().get(i).getQuantity());
-                                }
+                                foodReport = new FoodReport(strDate, foodInfos1);
                                 foodReports.add(foodReport);
                             }
+
+                            for (OrderFood orderFood : order.getFoods()) {
+                                for (FoodInfo foodInfo : foodReport.getFoods()) {
+                                    if (orderFood.getName().equals(foodInfo.getName())) {
+                                        foodInfo.setQuantity(foodInfo.getQuantity() + Integer.parseInt(orderFood.getQuantity()));
+                                    }
+                                }
+                            }
+
+                            Log.d("FOODSIZE", String.valueOf(foodReports.size()));
+
                         } catch (ParseException e) {
                             e.printStackTrace();
                         }

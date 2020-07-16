@@ -7,6 +7,7 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.nfc.Tag;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -49,16 +50,18 @@ public class SignIn extends AppCompatActivity {
                         String inputID = ((EditText)findViewById(R.id.editID)).getText().toString();
                         String inputPass = ((EditText)findViewById(R.id.editPass)).getText().toString();
                         UserInfo.instance.setUserName(inputID);
+                        Log.d("USERNAME", UserInfo.instance.getUserName().substring(UserInfo.instance.getUserName().length() - 2));
                         //String dataPass = snapshot.child(inputID).child("password").getValue().toString();
                         if (snapshot.child(inputID).exists()){
                             mDialog.dismiss();
                             String dataPass = snapshot.child(inputID).child("password").getValue().toString();
                             if (dataPass.contentEquals(inputPass)){
                                 Toast.makeText(SignIn.this, "Sign In Successfully!", Toast.LENGTH_SHORT).show();
+
                                 readData2(new MyCallback() {
                                     @Override
                                     public void onCallBack1(ArrayList<DateObject> value) {
-                                        return;
+                                        return ;
                                     }
 
                                     @Override
@@ -66,9 +69,17 @@ public class SignIn extends AppCompatActivity {
                                         UserInfo.instance.setFood(value);
                                     }
                                 });
-                                Intent mainUI = new Intent(SignIn.this, MainUI.class);
-                                startActivity(mainUI);
-                                finish();
+
+
+                                final Handler handler = new Handler();
+                                handler.postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Intent mainUI = new Intent(SignIn.this, MainUI.class);
+                                        startActivity(mainUI);
+                                        finish();
+                                    }
+                                }, 1000);
                             }
                             else {
                                 Toast.makeText(SignIn.this, "Wrong Password!", Toast.LENGTH_SHORT).show();
@@ -92,10 +103,9 @@ public class SignIn extends AppCompatActivity {
 
     private void readData2(final MyCallback myCallback) {
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference().child("Food");
-        reference.orderByChild("Vendor").equalTo(UserInfo.instance.getUserName().substring(UserInfo.instance.getUserName().length() - 2)).addListenerForSingleValueEvent(new ValueEventListener() {
+        reference.orderByChild("vendor").equalTo(UserInfo.instance.getUserName().substring(UserInfo.instance.getUserName().length() - 2)).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-
                 if (snapshot.getChildrenCount() > 0) {
                     List<FoodInfo> tempFoods = new ArrayList<FoodInfo>();
                     for (DataSnapshot data : snapshot.getChildren()) {
@@ -119,4 +129,6 @@ public class SignIn extends AppCompatActivity {
             }
         });
     }
+
+
 }

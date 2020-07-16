@@ -21,8 +21,11 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -74,7 +77,7 @@ public class MonthFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(final LayoutInflater inflater, final ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.activity_recycler_view, container, false);
@@ -84,17 +87,29 @@ public class MonthFragment extends Fragment {
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("Vendors").child(UserInfo.instance.getUserName()).child("completed_orders");
 
         final RecyclerView recyclerView = (RecyclerView)view.findViewById(R.id.recyclerView);
-
-
-
+        
         readData(new MyCallback() {
-            ArrayList<DateObject> value1 = new ArrayList<DateObject>();
-            ArrayList<FoodReport> value2 = new ArrayList<FoodReport>();
             @Override
             public void onCallBack1(ArrayList<DateObject> value) {
-                ObjectAdapter adapter = new ObjectAdapter(value);
+                    final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                    Collections.sort(value, new Comparator<DateObject>() {
+                        @Override
+                        public int compare(DateObject t0, DateObject t1) {
+                            int ret = 0;
+                            try {
+                                ret = sdf.parse(t0.getDate()).compareTo(sdf.parse(t1.getDate()));
+                            } catch (ParseException e) {
+                                e.printStackTrace();
+                            }
+                            return ret;
+                        }
+                    });
 
-                recyclerView.setAdapter(adapter);
+                    Collections.reverse(value);
+
+                    ObjectAdapter adapter = new ObjectAdapter(value);
+
+                    recyclerView.setAdapter(adapter);
             }
 
             @Override
@@ -110,6 +125,8 @@ public class MonthFragment extends Fragment {
     }
 
     private void readData(final MyCallback myCallback) {
+
+        final int month = Integer.parseInt(mParam1);
 
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("Vendors").child(UserInfo.instance.getUserName()).child("completed_orders");
         ref.orderByChild("date").addListenerForSingleValueEvent(new ValueEventListener() {
@@ -128,28 +145,31 @@ public class MonthFragment extends Fragment {
 
                             final String strDate = sdf2.format(date);
 
-                            boolean isExists = false;
+                            if ((month == Integer.parseInt(strDate.substring(5,7)))) {
 
-                            for (DateObject object : tempObjects) {
-                                if (strDate.equals(object.getDate())) {
-                                    isExists = true;
-                                    object.setNumberOfOrder(object.getNumberOfOrder() + 1);
-                                    for (OrderFood food : order.getFoods()) {
-                                        object.setRevenue(object.getRevenue() + Integer.parseInt(food.getPrice()) * Integer.parseInt(food.getQuantity()));
+                                boolean isExists = false;
+
+                                for (DateObject object : tempObjects) {
+                                    if (strDate.equals(object.getDate())) {
+                                        isExists = true;
+                                        object.setNumberOfOrder(object.getNumberOfOrder() + 1);
+                                        for (OrderFood food : order.getFoods()) {
+                                            object.setRevenue(object.getRevenue() + Integer.parseInt(food.getPrice()) * Integer.parseInt(food.getQuantity()));
+                                        }
+                                        break;
                                     }
-                                    break;
-                                }
-                            }
-
-                            if (!isExists) {
-
-                                DateObject object1 = new DateObject(strDate, 1, 0);
-
-                                for (OrderFood food : order.getFoods()) {
-                                    object1.setRevenue(object1.getRevenue() + Integer.parseInt(food.getPrice()) * Integer.parseInt(food.getQuantity()));
                                 }
 
-                                tempObjects.add(object1);
+                                if (!isExists) {
+
+                                    DateObject object1 = new DateObject(strDate, 1, 0);
+
+                                    for (OrderFood food : order.getFoods()) {
+                                        object1.setRevenue(object1.getRevenue() + Integer.parseInt(food.getPrice()) * Integer.parseInt(food.getQuantity()));
+                                    }
+
+                                    tempObjects.add(object1);
+                                }
                             }
                         }
                         catch (Exception e) {

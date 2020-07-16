@@ -65,8 +65,10 @@ public class ObjectAdapter extends RecyclerView.Adapter<ObjectAdapter.ViewHolder
         Context context = parent.getContext();
         LayoutInflater inflater = LayoutInflater.from(context);
 
+
         // Inflate the custom layout
         View objectView = inflater.inflate(R.layout.recycler_item, parent, false);
+
 
         // Return a new holder instance
         ViewHolder viewHolder = new ViewHolder(objectView);
@@ -77,6 +79,13 @@ public class ObjectAdapter extends RecyclerView.Adapter<ObjectAdapter.ViewHolder
     public void onBindViewHolder(@NonNull final ObjectAdapter.ViewHolder holder, int position) {
         DateObject object = mObjects.get(position);
         List<FoodReport> foodReports = UserInfo.instance.getFoodReports();
+        FoodReport foodReport = null;
+
+        for (FoodReport foodReport1 : foodReports) {
+            if (foodReport1.getDate().equals(object.getDate())) {
+                foodReport = foodReport1;
+            }
+        }
 
         final NumberFormat numberFormat = NumberFormat.getInstance();
         numberFormat.setGroupingUsed(true);
@@ -94,7 +103,7 @@ public class ObjectAdapter extends RecyclerView.Adapter<ObjectAdapter.ViewHolder
 
 
                 LinearLayout linearLayout = holder.parentLinearLayout;
-                    for (int j = 0; j < foodReports.get(holder.getAdapterPosition()).getFoods().size(); j++) {
+                    for (int j = 0; j < foodReport.getFoods().size(); j++) {
 
                         LinearLayout linearLayout1 = new LinearLayout(linearLayout.getContext());
                         linearLayout1.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
@@ -104,14 +113,14 @@ public class ObjectAdapter extends RecyclerView.Adapter<ObjectAdapter.ViewHolder
                         params.setMargins(10, 15, 0, 15);
                         TextView textViewFoodName = new TextView(linearLayout1.getContext());
                         textViewFoodName.setLayoutParams(params);
-                        textViewFoodName.setText(foodReports.get(holder.getAdapterPosition()).getFoods().get(j).getName());
+                        textViewFoodName.setText(foodReport.getFoods().get(j).getName());
                         linearLayout1.addView(textViewFoodName);
 
                         TableRow.LayoutParams params1 = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT);
                         params1.setMargins(0, 15, 10, 15);
                         TextView textViewRevenue = new TextView(linearLayout1.getContext());
                         textViewRevenue.setLayoutParams(params1);
-                        textViewRevenue.setText(numberFormat.format(Integer.parseInt(foodReports.get(holder.getAdapterPosition()).getFoods().get(j).getPrice()) * foodReports.get(holder.getAdapterPosition()).getFoods().get(j).getQuantity()));
+                        textViewRevenue.setText(numberFormat.format(Integer.parseInt(foodReport.getFoods().get(j).getPrice()) * foodReport.getFoods().get(j).getQuantity()));
                         linearLayout1.addView(textViewRevenue);
 
                         linearLayout.addView(linearLayout1);
@@ -130,6 +139,7 @@ public class ObjectAdapter extends RecyclerView.Adapter<ObjectAdapter.ViewHolder
 
     @Override
     public int getItemCount() {
-        return mObjects.size();
+        if (mObjects != null) return mObjects.size();
+        else return 0;
     }
 }

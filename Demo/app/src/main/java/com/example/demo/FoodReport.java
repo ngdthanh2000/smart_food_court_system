@@ -2,73 +2,64 @@ package com.example.demo;
 
 import java.util.List;
 
-class FoodInfo {
-    private String Id;
-    private String Name;
-    private String Image;
-    private String Description;
-    private String Price;
-    private String Discount;
-    private String Vendor;
+class  FoodInfo {
+    private String id;
+    private String name;
+    private String price;
+    private String discount;
+    private String vendor;
     private int quantity;
 
     public FoodInfo() {}
 
+    public FoodInfo (FoodInfo another) {
+        this.id = another.id;
+        this.name = another.name;
+        this.price = another.price;
+        this.discount = another.discount;
+        this.vendor = another.vendor;
+        this.quantity = another.quantity;
+    }
+
 
     public String getId() {
-        return Id;
+        return id;
     }
 
     public void setId(String id) {
-        this.Id = id;
+        this.id = id;
     }
 
     public String getName() {
-        return Name;
+        return name;
     }
 
     public void setName(String name) {
-        this.Name = name;
-    }
-
-    public String getImage() {
-        return Image;
-    }
-
-    public void setImage(String image) {
-        this.Image = image;
-    }
-
-    public String getDescription() {
-        return Description;
-    }
-
-    public void setDescription(String description) {
-        this.Description = description;
+        this.name = name;
     }
 
     public String getPrice() {
-        return Price;
+        return price;
     }
 
     public void setPrice(String price) {
-        this.Price = price;
+        this.price = price;
     }
 
     public String getDiscount() {
-        return Discount;
+        return discount;
     }
 
     public void setDiscount(String discount) {
-        this.Discount = discount;
+        this.discount = discount;
     }
 
     public String getVendor() {
-        return Vendor;
+        return vendor;
     }
 
     public void setVendor(String vendor) {
-        this.Vendor = vendor;
+        this.vendor = vendor;
     }
 
     public int getQuantity() {
@@ -84,6 +75,7 @@ class FoodInfo {
 public class FoodReport {
     private String date;
     private List<FoodInfo> foods;
+
 
     public FoodReport(String date, List<FoodInfo> foods) {
         this.date = date;

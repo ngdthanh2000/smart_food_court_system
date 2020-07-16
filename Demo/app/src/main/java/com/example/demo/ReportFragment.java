@@ -39,6 +39,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.Month;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
@@ -103,6 +104,8 @@ public class ReportFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
+        List<FoodReport> foodReports = UserInfo.instance.getFoodReports();
+
         View view = inflater.inflate(R.layout.fragment_report, container, false);
 
         viewPager  = (ViewPager) view.findViewById(R.id.pager);
@@ -110,21 +113,37 @@ public class ReportFragment extends Fragment {
 
         fragments = new ArrayList<>();
 
-        for (int i = 0; i < 10; i++) {
-            fragments.add(new MonthFragment());
+        String currentMonth = foodReports.get(0).getDate().substring(5,7);
+
+        for (int i = 0; i < 12; i++) {
+            if (i < 9) {
+                fragments.add(MonthFragment.newInstance("0" + String.valueOf(i + 1), ""));
+            }
+            else {
+                fragments.add(MonthFragment.newInstance(String.valueOf(i + 1), ""));
+            }
         }
+
 
         FragmentAdapter pagerAdapter = new FragmentAdapter(getFragmentManager(), getContext(), fragments);
         viewPager.setAdapter(pagerAdapter);
-        viewPager.setCurrentItem(5);
 
         tabLayout.setupWithViewPager(viewPager);
 
-        for (int i = 0; i < 10; i++) {
-            tabLayout.getTabAt(i).setText("06/2020");
+        int i = 0;
+
+        while (i <= 11) {
+            if (i < 9) {
+                tabLayout.getTabAt(i).setText("0" + String.valueOf(i + 1) + "/2020");
+            }
+            else {
+                tabLayout.getTabAt(i).setText(String.valueOf(i + 1) + "/2020");
+            }
+            ++i;
         }
 
-
+        viewPager.setCurrentItem(Integer.parseInt(currentMonth) - 1);
+        tabLayout.getTabAt(Integer.parseInt(currentMonth) - 1).select();
         // Inflate the layout for this fragment
         /*final View view = inflater.inflate(R.layout.activity_recycler_view, container, false);
 
@@ -162,62 +181,4 @@ public class ReportFragment extends Fragment {
 
     }
 
-    private void readData(final MyCallback myCallback) {
-
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("Vendors").child(UserInfo.instance.getUserName()).child("completed_orders");
-        ref.orderByChild("date").addListenerForSingleValueEvent(new ValueEventListener() {
-            @RequiresApi(api = Build.VERSION_CODES.O)
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (snapshot.getChildrenCount() > 0) {
-                    ArrayList<DateObject> tempObjects = new ArrayList<DateObject>();
-                    for (DataSnapshot data : snapshot.getChildren()) {
-                        // Date date = (Date) data.child("dated").getValue().toString();
-                        Order order = data.getValue(Order.class);
-                        SimpleDateFormat sdf1 = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy");
-                        SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd");
-                        try {
-                            Date date = sdf1.parse(order.getDate());
-
-                            final String strDate = sdf2.format(date);
-
-                            boolean isExists = false;
-
-                            for (DateObject object : tempObjects) {
-                                if (strDate.equals(object.getDate())) {
-                                    isExists = true;
-                                    object.setNumberOfOrder(object.getNumberOfOrder() + 1);
-                                    for (OrderFood food : order.getFoods()) {
-                                        object.setRevenue(object.getRevenue() + Integer.parseInt(food.getPrice()) * Integer.parseInt(food.getQuantity()));
-                                    }
-                                    break;
-                                }
-                            }
-
-                            if (!isExists) {
-
-                                DateObject object1 = new DateObject(strDate, 1, 0);
-
-                                for (OrderFood food : order.getFoods()) {
-                                    object1.setRevenue(object1.getRevenue() + Integer.parseInt(food.getPrice()) * Integer.parseInt(food.getQuantity()));
-                                }
-
-                                tempObjects.add(object1);
-                            }
-                        }
-                        catch (Exception e) {
-                            Log.d("ERROR", e.getMessage());
-                        }
-                    }
-                    myCallback.onCallBack1(tempObjects);
-                }
-            }
-
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
-    }
 }
