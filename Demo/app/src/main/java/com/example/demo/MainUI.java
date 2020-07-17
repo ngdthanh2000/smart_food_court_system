@@ -45,9 +45,9 @@ public class MainUI extends AppCompatActivity implements  NavigationView.OnNavig
         ref.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                String link = snapshot.child(UserInfo.instance.getId()).child("Image").getValue().toString();
+                String link = snapshot.child(UserInfo.instance.getId()).child("image").getValue().toString();
                 Picasso.with(getBaseContext()).load(link).into(img);
-                name.setText(snapshot.child(UserInfo.instance.getId()).child("Name").getValue().toString());
+                name.setText(snapshot.child(UserInfo.instance.getId()).child("name").getValue().toString());
             }
 
             @Override
@@ -55,6 +55,8 @@ public class MainUI extends AppCompatActivity implements  NavigationView.OnNavig
 
             }
         });
+
+
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar,R.string.navigation_drawer_open,R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
