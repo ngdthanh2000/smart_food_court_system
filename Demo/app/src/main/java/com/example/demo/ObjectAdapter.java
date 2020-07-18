@@ -2,6 +2,7 @@ package com.example.demo;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -36,7 +37,7 @@ import java.util.List;
 
 public class ObjectAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    RecyclerView recyclerView;
+    private Context context;
 
     public class ViewHolder0 extends RecyclerView.ViewHolder {
         public TextView textViewNoDate;
@@ -95,7 +96,7 @@ public class ObjectAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        Context context = parent.getContext();
+        context = parent.getContext();
         LayoutInflater inflater = LayoutInflater.from(context);
 
         RecyclerView.ViewHolder viewHolder = null;
@@ -137,12 +138,14 @@ public class ObjectAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 textView4.setText(String.valueOf(totalOrder));
                 TextView textView5 = viewHolder2.monthRevenue;
                 textView5.setText(numberFormat.format(totalRevenue));
-                Button button = viewHolder2.reportButton;
                 final String month = mObjects.get(position).getDate().substring(5,7);
+                Button button = viewHolder2.reportButton;
                 button.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        Log.d("MONTH", month);
+                        UserInfo.instance.setMonth(month);
+                        Intent intent = new Intent(context, CreateReport.class);
+                        context.startActivity(new Intent(context, CreateReport.class));
                     }
                 });
                 break;

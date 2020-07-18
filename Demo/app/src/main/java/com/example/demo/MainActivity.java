@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
+
     UserInfo userInfo = new UserInfo();
     Button btnSignIn;
 
@@ -27,8 +28,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        UserInfo.instance.setContext(MainActivity.this);
-        UserInfo.instance.setActivity(this);
+        UserInfo.instance.setContext(this);
 
         btnSignIn = (Button)findViewById(R.id.btnSignIn);
 

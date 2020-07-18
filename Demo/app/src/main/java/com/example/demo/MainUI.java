@@ -4,11 +4,18 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import androidx.appcompat.widget.AlertDialogLayout;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -32,9 +39,55 @@ import java.util.List;
 
 public class MainUI extends AppCompatActivity implements  NavigationView.OnNavigationItemSelectedListener{
     private DrawerLayout drawer;
+    private ProgressDialog progressDialog;
 
     public Object clone() throws CloneNotSupportedException {
         return super.clone();
+    }
+
+    private class AsyncTaskLoadingData extends AsyncTask<Void, Void, Void> {
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            progressDialog = new ProgressDialog(MainUI.this);
+            progressDialog.setMessage("Loading Data... Please Wait!");
+            progressDialog.setIndeterminate(false);
+            progressDialog.setCancelable(false);
+            progressDialog.show();
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+
+            readData(new MyCallback2() {
+                @Override
+                public void onCallBack3(List<FoodReport> value) {
+                    final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                    Collections.sort(value, new Comparator<FoodReport>() {
+                        @Override
+                        public int compare(FoodReport foodReport, FoodReport t1) {
+                            int ret = 0;
+                            try {
+                                ret = sdf.parse(foodReport.getDate()).compareTo(sdf.parse(t1.getDate()));
+                            } catch (ParseException e) {
+                                e.printStackTrace();
+                            }
+                            return ret;
+                        }
+                    });
+
+                    Collections.reverse(value);
+
+                    UserInfo.instance.setFoodReports(value);
+                }
+            });
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void v) {
+            progressDialog.hide();
+        }
     }
 
     @Override
@@ -42,28 +95,9 @@ public class MainUI extends AppCompatActivity implements  NavigationView.OnNavig
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_u_i);
 
-        readData(new MyCallback2() {
-            @Override
-            public void onCallBack3(List<FoodReport> value) {
-                final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                Collections.sort(value, new Comparator<FoodReport>() {
-                    @Override
-                    public int compare(FoodReport foodReport, FoodReport t1) {
-                        int ret = 0;
-                        try {
-                            ret = sdf.parse(foodReport.getDate()).compareTo(sdf.parse(t1.getDate()));
-                        } catch (ParseException e) {
-                            e.printStackTrace();
-                        }
-                        return ret;
-                    }
-                });
+        AsyncTaskLoadingData asyncTaskLoadingData = new AsyncTaskLoadingData();
+        asyncTaskLoadingData.execute();
 
-                Collections.reverse(value);
-
-                UserInfo.instance.setFoodReports(value);
-            }
-        });
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -165,6 +199,26 @@ public class MainUI extends AppCompatActivity implements  NavigationView.OnNavig
                 break;
             case R.id.nav_report:
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new ReportFragment()).commit();
+                break;
+            case R.id.nav_logout:
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainUI.this);
+                builder.setMessage("Are you sure you want to log out?");
+                builder.setPositiveButton("Agree", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        UserInfo.instance.clear();
+                        Intent intent = new Intent(MainUI.this, SignIn.class);
+                        startActivity(intent);
+
+                    }
+                });
+                builder.setNegativeButton("Close", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                    }
+                });
+                AlertDialog dialog = builder.create();
+                dialog.show();
                 break;
         }
         drawer.closeDrawer(GravityCompat.START);

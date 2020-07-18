@@ -11,15 +11,22 @@ public class UserInfo {
 
     String userName;
     Context context;
-    Activity activity;
     List<FoodInfo> food;
     List<FoodReport> foodReports;
-    private String date;
+    String month;
 
     public UserInfo() {
         if (instance == null) {
             instance = this;
         }
+    }
+
+    public void clear() {
+        this.userName = null;
+        this.context = null;
+        this.food = null;
+        this.foodReports = null;
+        this.month = null;
     }
 
     public String getUserName() {
@@ -38,27 +45,15 @@ public class UserInfo {
         this.context = context;
     }
 
-    public Activity getActivity() {
-        return (this).activity;
-    }
-
-    public void setActivity(Activity activity) {
-        this.activity = activity;
-    }
-
     public List<FoodInfo> getFood() { return this.food; }
 
     public void setFood (List<FoodInfo> food) { this.food = food; }
 
-    public String getDate() {
-        return date;
-    }
-
-    public void setDate(String date) {
-        this.date = date;
-    }
-
     public List<FoodReport> getFoodReports() {return this.foodReports;}
 
     public void setFoodReports(List<FoodReport> foodReports) {this.foodReports = foodReports;}
+
+    public String getMonth() {return this.month;}
+
+    public void setMonth(String month) {this.month = month;}
 }
