@@ -120,6 +120,9 @@ public class MainUI extends AppCompatActivity implements  NavigationView.OnNavig
         ref.orderByChild("date").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+                String link = snapshot.child(UserInfo.instance.getId()).child("image").getValue().toString();
+                Picasso.with(getBaseContext()).load(link).into(img);
+                name.setText(snapshot.child(UserInfo.instance.getId()).child("name").getValue().toString());
                 List<FoodReport> foodReports = new ArrayList<FoodReport>();
                 List<FoodInfo> foodInfos = UserInfo.instance.getFood();
                 if (snapshot.getChildrenCount() > 0) {
@@ -176,6 +179,16 @@ public class MainUI extends AppCompatActivity implements  NavigationView.OnNavig
 
             }
         });
+
+
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar,R.string.navigation_drawer_open,R.string.navigation_drawer_close);
+        drawer.addDrawerListener(toggle);
+        toggle.syncState();
+
+        if (savedInstanceState == null){
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new MenuFragment()).commit();
+            navigationView.setCheckedItem(R.id.nav_menu);
+        }
     }
 
     @Override

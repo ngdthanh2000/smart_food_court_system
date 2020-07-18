@@ -2,6 +2,10 @@ package com.example.demo;
 
 public class Food {
     private String description;
+    private String discount;
+    private String image;
+    private String name;
+    private String price;
     private int discount;
     private String linkImage;
     private String name;
@@ -10,6 +14,10 @@ public class Food {
 
     public Food(){}
 
+    public Food(String description, String discount, String image, String name, String price, String vendor) {
+        this.description = description;
+        this.discount = discount;
+        this.image = image;
     public Food(String description, int discount, String linkImage, String name, int price, String vendor) {
         this.description = description;
         this.discount = discount;
@@ -27,6 +35,20 @@ public class Food {
         this.description = description;
     }
 
+    public String getDiscount() {
+        return discount;
+    }
+
+    public void setDiscount(String discount) {
+        this.discount = discount;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
     public int getDiscount() {
         return discount;
     }
@@ -51,6 +73,11 @@ public class Food {
         this.name = name;
     }
 
+    public String getPrice() {
+        return price;
+    }
+
+    public void setPrice(String price) {
     public int getPrice() {
         return price;
     }
