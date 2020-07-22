@@ -1,7 +1,7 @@
-<?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/order_info"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
@@ -25,37 +25,60 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/order_id"
+                android:id="@+id/product_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
                 android:gravity="center_vertical|start"
-                android:text="#1111111"
+                android:text="food name here"
                 android:textAllCaps="true"
                 android:textStyle="bold">
 
             </TextView>
 
             <TextView
-                android:id="@+id/order_time"
+                android:id="@+id/product_quantity"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_marginLeft="10dp"
                 android:gravity="center_vertical|start"
-                android:text="Time"
+                android:text="quantity"
                 android:textAllCaps="true"
                 android:textStyle="italic">
 
             </TextView>
 
-
             <TextView
-                android:id="@+id/order_total"
+                android:id="@+id/product_price"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
                 android:gravity="center_vertical|start"
-                android:text="Total"
+                android:text="price"
+                android:textAllCaps="true"
+                android:textStyle="italic">
+
+            </TextView>
+
+            <TextView
+                android:id="@+id/product_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:gravity="center_vertical|start"
+                android:text="status"
+                android:textAllCaps="true"
+                android:textStyle="italic">
+
+            </TextView>
+
+            <TextView
+                android:id="@+id/vendor_owner"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:gravity="center_vertical|start"
+                android:text="vendor here"
                 android:textAllCaps="true"
                 android:textStyle="italic">
 

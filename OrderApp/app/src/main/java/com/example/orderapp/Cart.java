@@ -49,7 +49,7 @@ public class Cart extends AppCompatActivity {
     DatabaseReference requests;
 
     FirebaseDatabase Order_database;
-    DatabaseReference Order;
+    DatabaseReference Order, viewOrder;
 
     OrderViewHolder orderViewHolder;
 
@@ -81,7 +81,7 @@ public class Cart extends AppCompatActivity {
 
         Order_database  = FirebaseDatabase.getInstance();
         Order  = Order_database.getReference("User/"+Common.currentUser.getUsername()+"/PlacedOrder");
-
+        viewOrder =database.getReference("PlacedOrder");
 
         //Init
         recyclerView = (RecyclerView)findViewById(R.id.listCart);
@@ -131,11 +131,11 @@ public class Cart extends AppCompatActivity {
         alertDialogBuilder.setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                Date date = java.util.Calendar.getInstance().getTime();
+
                 String Date = java.util.Calendar.getInstance().getTime().toString();
                 Request request = new Request(Common.currentUser.getUsername(),
                         txtTotalPrice.getText().toString(),
-                        cart, Date,"Pending",RequestId);
+                        cart, Date,RequestId,Common.currentUser.getPhoneNumber(),"Pending");
 
 
 
@@ -146,9 +146,7 @@ public class Cart extends AppCompatActivity {
 
                 //Submit to Firebase
                 requests.child(String.valueOf(System.currentTimeMillis())).setValue(request);
-                Order.child(String.valueOf(System.currentTimeMillis())).setValue(placedOrder);
-               // Order.push().setValue(placedOrder);
-             // Order.child(String.valueOf(System.currentTimeMillis())).child(Common.currentUser.getUsername()).setValue(placedOrder);
+                viewOrder.child(String.valueOf(System.currentTimeMillis())).setValue(request);
 
                 //Delete Cart
                 new Database(getBaseContext()).cleanCart();

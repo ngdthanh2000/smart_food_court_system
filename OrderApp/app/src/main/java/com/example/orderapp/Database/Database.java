@@ -51,6 +51,7 @@ public class Database extends SQLiteAssetHelper {
                          c.getString(c.getColumnIndex("Price")),
                          c.getString(c.getColumnIndex("Discount")),
                          c.getString(c.getColumnIndex("Vendor"))
+
                  ));
              } while (c.moveToNext());
          }

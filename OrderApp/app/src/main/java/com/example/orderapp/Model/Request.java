@@ -11,18 +11,35 @@ public class Request {
     private  String total;
     private List<Order> foods;
     private String date;
+    private String phone;
     private String status;
-
     public Request() {
     }
 
-    public Request(String owner, String total, List<Order> foods, String date, String status,int id) {
+    public Request(String owner, String total, List<Order> foods, String date, int id, String phone, String status) {
         this.owner = owner;
         this.total = total;
         this.foods = foods;
         this.date = date;
-        this.status=status;
         this.ID = id;
+        this.phone = phone;
+        this.status = "Pending";
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
     public int getID() {
@@ -65,11 +82,5 @@ public class Request {
         this.date = date;
     }
 
-    public String getStatus() {
-        return status;
-    }
 
-    public void setStatus(String status) {
-        this.status = status;
-    }
 }

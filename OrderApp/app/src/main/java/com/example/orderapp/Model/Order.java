@@ -7,6 +7,8 @@ public class Order {
     private String Price;
     private String Discount;
     private  String Vendor;
+    private  String Status;
+
 
     public Order() {
     }
@@ -18,6 +20,17 @@ public class Order {
         Price = price;
         Discount = discount;
         Vendor = vendor;
+        Status = "Pending";
+
+    }
+
+
+    public String getStatus() {
+        return Status;
+    }
+
+    public void setStatus(String status) {
+        Status = status;
     }
 
     public String getProductId() {
