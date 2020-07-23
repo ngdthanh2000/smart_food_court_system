@@ -2,14 +2,12 @@ package com.ngsown.ordermanagementapplication
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.widget.ListView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.*
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import kotlinx.android.synthetic.main.activity_managing.*
@@ -37,6 +35,11 @@ class ManagingActivity : AppCompatActivity() {
 
         var vendorId = pref.getString("vendor_id", "00") // store current vendor_id for later use
         requestRef.addValueEventListener(object : ValueEventListener{
+
+
+            var placedOrderDB = firebaseDB.child("PlacedOrder").ref
+            var query : Query = placedOrderDB.orderByKey().equalTo("test1")
+            
             var newRequestList = arrayListOf<Request>()
             var allRequestList = arrayListOf<Request>()
 

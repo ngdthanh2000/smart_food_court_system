@@ -9,11 +9,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.*
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import kotlinx.android.synthetic.main.order_row_view.view.*
@@ -45,6 +43,11 @@ class RecyclerAdapter(var context: Activity, private var list: ArrayList<Request
         private var list = l
         init {
             v.setOnClickListener(this)
+            v.setOnLongClickListener {
+                //Log.d("long click", "aaaa")
+                showCancelDialog(adapterPosition)
+                true
+            }
         }
 
         override fun onClick(v: View) {
@@ -54,6 +57,7 @@ class RecyclerAdapter(var context: Activity, private var list: ArrayList<Request
             else if (v.txtOrderStatus.text == "Preparing")
                 showCompleteDialog(adapterPosition)
         }
+
         //region Order Interaction
         private fun updateDatabase(itemIndex: Int){
             var completedOrder = CompletedOrder(list[itemIndex].foods, list[itemIndex].id, list[itemIndex].owner,
@@ -85,6 +89,49 @@ class RecyclerAdapter(var context: Activity, private var list: ArrayList<Request
                 requestDB.child(food).removeValue()
             }
         }
+        private fun cancelOrder(itemIndex: Int){
+            var completedOrder = CompletedOrder(list[itemIndex].foods, list[itemIndex].id, list[itemIndex].owner,
+                list[itemIndex].date)
+            var firebaseDB: DatabaseReference = Firebase.database.reference
+            val pref = view.context.getSharedPreferences("PREF", Context.MODE_PRIVATE)
+            // Reference to vendor database
+            var ordersDB = firebaseDB.child("Vendors").child(pref.getString("username", "null").toString()).child("completed_orders").ref
+
+            //ordersDB.push().setValue(completedOrder)
+            // Remove completed from view by deleting it from database
+            var requestDB = firebaseDB.child("Request").child(list[itemIndex].request_key).child("foods").ref
+            var placedOrderDB = firebaseDB.child("PlacedOrder").ref
+            var query: Query = placedOrderDB.orderByKey().equalTo("test1")
+            query.addValueEventListener(object : ValueEventListener{
+                override fun onCancelled(error: DatabaseError) {
+                    TODO("Not yet implemented")
+                }
+
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    for (id in snapshot.children){
+                        Log.d("order id", id.child("id").getValue().toString())
+                    }
+                }
+
+            })
+            /*requestDB.addValueEventListener(object : ValueEventListener {
+                override fun onCancelled(error: DatabaseError) {
+                    TODO("Not yet implemented")
+                }
+
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if (!snapshot.hasChildren()){
+                        var firebaseDB: DatabaseReference = Firebase.database.reference
+                        var request = firebaseDB.child("Request").child(list[itemIndex].request_key).ref
+                        request.removeValue()
+                    }
+                }
+
+            })
+            for (food in list[itemIndex].food_index){
+                requestDB.child(food).removeValue()
+            }*/
+        }
         private fun showCompleteDialog(itemIndex: Int){
             var dialog = AlertDialog.Builder(view.context)
             dialog.setTitle("Confirmation")
@@ -93,6 +140,21 @@ class RecyclerAdapter(var context: Activity, private var list: ArrayList<Request
                 DialogInterface.OnClickListener { dialog, which ->
                     // Push complete order to database and remove it from view
                     updateDatabase(itemIndex)
+                })
+            dialog.setNegativeButton("No",
+                DialogInterface.OnClickListener { dialog, which ->
+                    // Do nothing
+                })
+            dialog.show()
+        }
+        private fun showCancelDialog(itemIndex: Int){
+            var dialog = AlertDialog.Builder(view.context)
+            dialog.setTitle("Cancel")
+            dialog.setMessage("Are you sure to cancel this order?")
+            dialog.setPositiveButton("Yes",
+                DialogInterface.OnClickListener { dialog, which ->
+                    // Push complete order to database and remove it from view
+                    cancelOrder(itemIndex)
                 })
             dialog.setNegativeButton("No",
                 DialogInterface.OnClickListener { dialog, which ->
