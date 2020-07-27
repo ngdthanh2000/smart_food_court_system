@@ -8,7 +8,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.database.*
@@ -44,14 +43,13 @@ class RecyclerAdapter(var context: Activity, private var list: ArrayList<Request
         init {
             v.setOnClickListener(this)
             v.setOnLongClickListener {
-                //Log.d("long click", "aaaa")
+
                 showCancelDialog(adapterPosition)
                 true
             }
         }
 
         override fun onClick(v: View) {
-            //Log.d("RecyclerView", v.id.toString())
             if (v.txtOrderStatus.text == "Pending")
                 showPrepareDialog(adapterPosition)
             else if (v.txtOrderStatus.text == "Preparing")
@@ -60,6 +58,7 @@ class RecyclerAdapter(var context: Activity, private var list: ArrayList<Request
 
         //region Order Interaction
         private fun updateDatabase(itemIndex: Int){
+            //region Update completed order
             var completedOrder = CompletedOrder(list[itemIndex].foods, list[itemIndex].id, list[itemIndex].owner,
                 list[itemIndex].date)
             var firebaseDB: DatabaseReference = Firebase.database.reference
@@ -88,33 +87,94 @@ class RecyclerAdapter(var context: Activity, private var list: ArrayList<Request
             for (food in list[itemIndex].food_index){
                 requestDB.child(food).removeValue()
             }
-        }
-        private fun cancelOrder(itemIndex: Int){
-            var completedOrder = CompletedOrder(list[itemIndex].foods, list[itemIndex].id, list[itemIndex].owner,
-                list[itemIndex].date)
-            var firebaseDB: DatabaseReference = Firebase.database.reference
-            val pref = view.context.getSharedPreferences("PREF", Context.MODE_PRIVATE)
-            // Reference to vendor database
-            var ordersDB = firebaseDB.child("Vendors").child(pref.getString("username", "null").toString()).child("completed_orders").ref
-
-            //ordersDB.push().setValue(completedOrder)
-            // Remove completed from view by deleting it from database
-            var requestDB = firebaseDB.child("Request").child(list[itemIndex].request_key).child("foods").ref
+            //endregion
+            //region Update PlacedOrder Database
             var placedOrderDB = firebaseDB.child("PlacedOrder").ref
-            var query: Query = placedOrderDB.orderByKey().equalTo("test1")
+
+            var query: Query = placedOrderDB.orderByChild("id").equalTo(completedOrder.id.toDouble())
+            var foods : DatabaseReference
+
             query.addValueEventListener(object : ValueEventListener{
                 override fun onCancelled(error: DatabaseError) {
                     TODO("Not yet implemented")
                 }
 
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    for (id in snapshot.children){
-                        Log.d("order id", id.child("id").getValue().toString())
+                    for (order in snapshot.children){
+                        //Log.d("orderkey", order.key.toString())
+                        foods = query.ref.child(order.key.toString()).child("foods").ref
+
+                        foods.addValueEventListener(object : ValueEventListener{
+                            override fun onCancelled(error: DatabaseError) {
+                                TODO("Not yet implemented")
+                            }
+
+                            override fun onDataChange(snapshot: DataSnapshot) {
+                                for ((i, food) in snapshot.children.withIndex()){
+                                    if (snapshot.child(i.toString()).child("vendor").value.toString() == pref.getString("vendor_id", "null")!!) {
+                                        foods.child(i.toString()).updateChildren(mapOf<String, String>(Pair("status", "Done")))
+                                    }
+                                    else
+                                        Log.d("fail", snapshot.child(i.toString()).child("vendor").toString())
+                                }
+                            }
+
+                        })
                     }
                 }
 
             })
-            /*requestDB.addValueEventListener(object : ValueEventListener {
+            //endregion
+
+        }
+        private fun cancelOrder(itemIndex: Int){
+            //region Change order status to "Canceled"
+            var canceledOrder = CompletedOrder(list[itemIndex].foods, list[itemIndex].id, list[itemIndex].owner,
+                list[itemIndex].date)
+
+            var firebaseDB: DatabaseReference = Firebase.database.reference
+            val pref = view.context.getSharedPreferences("PREF", Context.MODE_PRIVATE)
+
+            var placedOrderDB = firebaseDB.child("PlacedOrder").ref
+
+            var query: Query = placedOrderDB.orderByChild("id").equalTo(canceledOrder.id.toDouble())
+            var foods : DatabaseReference
+
+            query.addValueEventListener(object : ValueEventListener{
+                override fun onCancelled(error: DatabaseError) {
+                    TODO("Not yet implemented")
+                }
+
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    for (order in snapshot.children){
+                        //Log.d("orderkey", order.key.toString())
+                        foods = query.ref.child(order.key.toString()).child("foods").ref
+
+                        foods.addValueEventListener(object : ValueEventListener{
+                            override fun onCancelled(error: DatabaseError) {
+                                TODO("Not yet implemented")
+                            }
+
+                            override fun onDataChange(snapshot: DataSnapshot) {
+                                for ((i, food) in snapshot.children.withIndex()){
+                                    if (snapshot.child(i.toString()).child("vendor").value.toString() == pref.getString("vendor_id", "null")!!) {
+                                        foods.child(i.toString()).updateChildren(mapOf<String, String>(Pair("status", "Canceled")))
+                                    }
+                                    else
+                                        Log.d("fail", snapshot.child(i.toString()).child("vendor").toString())
+                                }
+                            }
+
+                        })
+                    }
+                }
+
+            })
+            //endregion
+            //region Delete from Request DB
+            var requestDB = firebaseDB.child("Request").child(list[itemIndex].request_key).child("foods").ref
+
+            requestDB.addValueEventListener(object : ValueEventListener {
                 override fun onCancelled(error: DatabaseError) {
                     TODO("Not yet implemented")
                 }
@@ -130,7 +190,9 @@ class RecyclerAdapter(var context: Activity, private var list: ArrayList<Request
             })
             for (food in list[itemIndex].food_index){
                 requestDB.child(food).removeValue()
-            }*/
+            }
+            //endregion
+
         }
         private fun showCompleteDialog(itemIndex: Int){
             var dialog = AlertDialog.Builder(view.context)
