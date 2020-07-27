@@ -1,37 +1,50 @@
 package com.example.orderapp.Model;
 
 public class Order {
+    private int ID;
     private String ProductId;
     private String ProductName;
     private String Quantity;
     private String Price;
     private String Discount;
     private  String Vendor;
-    private  String Status;
+    private String Status;
 
 
     public Order() {
     }
 
-    public Order(String productId, String productName, String quantity, String price, String discount,String vendor) {
+    public Order(String productId, String productName, String quantity, String price, String discount, String vendor) {
         ProductId = productId;
         ProductName = productName;
         Quantity = quantity;
         Price = price;
         Discount = discount;
         Vendor = vendor;
-        Status = "Pending";
+
 
     }
 
+    public Order(int ID, String productId, String productName, String quantity, String price, String discount, String vendor) {
+        this.ID = ID;
+        ProductId = productId;
+        ProductName = productName;
+        Quantity = quantity;
+        Price = price;
+        Discount = discount;
+        Vendor = vendor;
 
-    public String getStatus() {
-        return Status;
     }
 
-    public void setStatus(String status) {
-        Status = status;
+    public int getID() {
+        return ID;
     }
+
+    public void setID(int ID) {
+        this.ID = ID;
+    }
+
+
 
     public String getProductId() {
         return ProductId;
@@ -79,5 +92,13 @@ public class Order {
 
     public void setVendor(String vendor) {
         Vendor = vendor;
+    }
+
+    public String getStatus() {
+        return Status;
+    }
+
+    public void setStatus(String status) {
+        Status = status;
     }
 }

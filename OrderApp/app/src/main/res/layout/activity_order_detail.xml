@@ -69,17 +69,7 @@
 
                 </TextView>
 
-                <TextView
-                    android:id="@+id/order_status"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="10dp"
-                    android:gravity="center_vertical|start"
-                    android:text="status"
-                    android:textAllCaps="true"
-                    android:textStyle="italic">
 
-                </TextView>
 
 
             </LinearLayout>

@@ -13,7 +13,7 @@ import com.example.orderapp.ViewHolder.OrderDetailAdapter;
 
 public class OrderDetail extends AppCompatActivity {
 
-    TextView orderId, orderTime,orderTotal,orderStatus;
+    TextView orderId, orderTime,orderTotal;
     String order_id_value="";
     RecyclerView lstFood;
     RecyclerView.LayoutManager layoutManager;
@@ -26,7 +26,7 @@ public class OrderDetail extends AppCompatActivity {
         orderId = (TextView)findViewById(R.id.order_id);
         orderTime = (TextView)findViewById(R.id.order_time);
         orderTotal = (TextView)findViewById(R.id.order_total);
-        orderStatus = (TextView)findViewById(R.id.order_status) ;
+       // orderStatus = (TextView)findViewById(R.id.order_status) ;
 
         lstFood = (RecyclerView)findViewById(R.id.lstFoods);
         lstFood.setHasFixedSize(true);
@@ -38,7 +38,7 @@ public class OrderDetail extends AppCompatActivity {
         orderId.setText(order_id_value);
         orderTotal.setText(Common.currentRequest.getTotal());
         orderTime.setText(Common.currentRequest.getDate());
-        orderStatus.setText(Common.currentRequest.getStatus());
+        //orderStatus.setText(Common.currentRequest.getStatus());
         OrderDetailAdapter adapter = new OrderDetailAdapter(Common.currentRequest.getFoods());
         adapter.notifyDataSetChanged();
         lstFood.setAdapter(adapter);

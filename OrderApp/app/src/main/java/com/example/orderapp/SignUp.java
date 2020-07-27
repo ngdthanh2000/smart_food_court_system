@@ -19,6 +19,7 @@ import com.rengwuxian.materialedittext.MaterialEditText;
 public class SignUp extends AppCompatActivity {
     MaterialEditText edtUsername, edtName, edtPassword, edtPhoneNumber;
     Button btnSignUp;
+    int flag=0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,17 +46,19 @@ public class SignUp extends AppCompatActivity {
                 table_user.addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        //Check if phone no. is used
-                        if(dataSnapshot.child(edtUsername.getText().toString()).exists()){
+
+                        if(dataSnapshot.child(edtUsername.getText().toString()).exists() && flag == 0){
                             mDialog.dismiss();
                             Toast.makeText(SignUp.this, "Username is used!", Toast.LENGTH_SHORT).show();
                         }
                         else{
+                            flag = 1;
                             mDialog.dismiss();
                             User user =new User(edtName.getText().toString(), edtPassword.getText().toString(),edtUsername.getText().toString(),edtPhoneNumber.getText().toString());
                             table_user.child(edtUsername.getText().toString()).setValue(user);
                             Toast.makeText(SignUp.this, "Sign up successfully !", Toast.LENGTH_SHORT).show();
                             finish();
+
                         }
                     }
 

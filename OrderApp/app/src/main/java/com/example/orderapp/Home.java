@@ -14,6 +14,7 @@ import com.example.orderapp.Common.Common;
 import com.example.orderapp.Interface.ItemClickListener;
 import com.example.orderapp.Model.Category;
 import com.example.orderapp.Model.Food;
+import com.example.orderapp.Service.ListienOrder;
 import com.example.orderapp.ViewHolder.MenuViewHolder;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -98,7 +99,13 @@ implements NavigationView.OnNavigationItemSelectedListener
         layoutManager = new LinearLayoutManager(this);
         recycler_menu.setLayoutManager(layoutManager);
         loadMenu();
-        
+
+
+         //Regster Service
+
+       // Intent service = new Intent(Home.this, ListienOrder.class);
+      //  startActivity(service);
+
 
 
     }

@@ -74,7 +74,6 @@ public class OrderStatus extends AppCompatActivity {
                 orderViewHolder.txtOrderId.setText("#"+adapter.getRef(i).getKey());
                 orderViewHolder.txtOrderTotal.setText(request.getTotal());
                 orderViewHolder.txtOrderTime.setText(request.getDate());
-
                 orderViewHolder.setItemClickListener(new ItemClickListener() {
                     @Override
                     public void onClick(View view, int position, boolean isLongClick) {
