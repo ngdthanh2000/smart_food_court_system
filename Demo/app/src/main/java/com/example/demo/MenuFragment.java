@@ -7,8 +7,10 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -26,6 +28,7 @@ import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -48,6 +51,7 @@ public class MenuFragment extends Fragment {
 
     EditText edit_description, edit_discount, edit_name, edit_price;
     ImageButton edit_img;
+    Button btnUpload;
     Food newFood;
 
     @Nullable
@@ -69,21 +73,28 @@ public class MenuFragment extends Fragment {
             @Override
             public void onClick(View view) {
 
-                AlertDialog.Builder alertDialog = new AlertDialog.Builder(MenuFragment.this.getContext());
+                final AlertDialog.Builder alertDialog = new AlertDialog.Builder(MenuFragment.this.getContext());
                 alertDialog.setTitle("Add new food");
 
-                LayoutInflater inflater1 = getActivity().getLayoutInflater();
+                final LayoutInflater inflater1 = getActivity().getLayoutInflater();
                 View dialog = inflater1.inflate(R.layout.edit_dialog, null);
                 edit_description = dialog.findViewById(R.id.edit_description);
                 edit_discount = dialog.findViewById(R.id.edit_discount);
                 edit_name = dialog.findViewById(R.id.edit_name);
                 edit_price = dialog.findViewById(R.id.edit_price);
                 edit_img = dialog.findViewById(R.id.edit_img);
+                btnUpload = dialog.findViewById(R.id.btnUpload);
 
                 edit_img.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         chooseImg();
+                    }
+                });
+
+                btnUpload.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
                         uploadImg();
                     }
                 });
@@ -93,7 +104,35 @@ public class MenuFragment extends Fragment {
                 alertDialog.setPositiveButton("Save", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        if (newFood != null) ref.push().setValue(newFood);
+                        final AlertDialog.Builder confirmDialog = new AlertDialog.Builder(MenuFragment.this.getContext());
+                        confirmDialog.setTitle("Input your password");
+                        final View confirm_Dialog = inflater1.inflate(R.layout.confirm_dialog, null);
+
+                        final EditText confirmPass;
+                        Button btnConfirm;
+                        confirmPass = confirm_Dialog.findViewById(R.id.confirm_pass);
+                        btnConfirm = confirm_Dialog.findViewById(R.id.btnConfirm);
+                        btnConfirm.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                if (UserInfo.instance.getPass() == confirmPass.getText().toString()){
+                                    if (newFood != null) {
+                                        ref.push().setValue(newFood);
+                                        confirmDialog.setMessage("Your Food is added!");
+                                    }
+                                    else{
+                                        confirmDialog.setMessage("Add Food failed!");
+
+                                    }
+                                }
+                                else {
+                                    confirmDialog.setMessage("Wrong Password!");
+                                    confirmDialog.setView(confirm_Dialog);
+                                }
+                            }
+                        });
+                        confirmDialog.setView(confirm_Dialog);
+
                     }
                 });
 
@@ -114,6 +153,74 @@ public class MenuFragment extends Fragment {
     }
 
     @Override
+    public boolean onContextItemSelected(@NonNull MenuItem item) {
+        if (item.getTitle().equals("Edit")){
+            showEditDialog(adapter.getRef(item.getOrder()).getKey(), adapter.getItem(item.getOrder()));
+        }
+        else if (item.getTitle().equals("Delete")){
+            deleteFood(adapter.getRef(item.getOrder()).getKey());
+        }
+        return super.onContextItemSelected(item);
+    }
+
+    private void deleteFood(String key) {
+        ref.child(key).removeValue();
+    }
+
+    private void showEditDialog(final String key, final Food item) {
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(MenuFragment.this.getContext());
+        alertDialog.setTitle("Edit food");
+
+        LayoutInflater inflater1 = getActivity().getLayoutInflater();
+        View dialog = inflater1.inflate(R.layout.edit_dialog, null);
+        edit_description = dialog.findViewById(R.id.edit_description);
+        edit_discount = dialog.findViewById(R.id.edit_discount);
+        edit_name = dialog.findViewById(R.id.edit_name);
+        edit_price = dialog.findViewById(R.id.edit_price);
+        edit_img = dialog.findViewById(R.id.edit_img);
+
+        edit_description.setText(item.getDescription());
+        edit_discount.setText(item.getDiscount());
+        edit_name.setText(item.getName());
+        edit_price.setText(item.getPrice());
+        Picasso.with(getContext()).load(item.getImage()).into(edit_img);
+
+        btnUpload = dialog.findViewById(R.id.btnUpload);
+
+        edit_img.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                chooseImg();
+            }
+        });
+
+        btnUpload.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                changeImg(item);
+            }
+        });
+
+        alertDialog.setView(dialog);
+
+        alertDialog.setPositiveButton("Save", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                //if (newFood != null) ref.push().setValue(newFood);
+                ref.child(key).setValue(item);
+            }
+        });
+
+        alertDialog.setNegativeButton("Discard", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+
+            }
+        });
+        alertDialog.show();
+    }
+
+    @Override
     public void onStart() {
         super.onStart();
         adapter.startListening();
@@ -123,12 +230,6 @@ public class MenuFragment extends Fragment {
     public void onStop() {
         super.onStop();
         adapter.stopListening();
-
-public class MenuFragment extends Fragment {
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_menu, container, false);
     }
 
     private void chooseImg(){
@@ -149,6 +250,7 @@ public class MenuFragment extends Fragment {
             imgFolder.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                 @Override
                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    mDialog.dismiss();
                     Toast.makeText(MenuFragment.this.getContext(), "Uploaded!", Toast.LENGTH_LONG).show();
                     imgFolder.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                         @Override
@@ -163,13 +265,6 @@ public class MenuFragment extends Fragment {
                         public void onFailure(@NonNull Exception e) {
                             mDialog.dismiss();
                             Toast.makeText(MenuFragment.this.getContext(), ""+e.getMessage(), Toast.LENGTH_LONG).show();
-                        }
-                    })
-                    .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onProgress(@NonNull UploadTask.TaskSnapshot taskSnapshot) {
-                            double progess = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
-                            mDialog.setMessage("Uploading " + progess +"%");
                         }
                     });
         }
@@ -228,9 +323,53 @@ public class MenuFragment extends Fragment {
                         alertDialog.show();
                     }
                 });
+
             }
         };
         adapter.notifyDataSetChanged();
         recyclerView.setAdapter(adapter);
+    }
+    private void changeImg(final Food item){
+        if (uri != null){
+            final ProgressDialog mDialog = new ProgressDialog(this.getContext());
+            mDialog.setMessage("Uploading...");
+            mDialog.show();
+
+            String imgName = UUID.randomUUID().toString();
+            final StorageReference imgFolder = FirebaseStorage.getInstance().getReference().child("images/" + imgName);
+            imgFolder.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    Toast.makeText(MenuFragment.this.getContext(), "Uploaded!", Toast.LENGTH_LONG).show();
+                    imgFolder.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                        @Override
+                        public void onSuccess(Uri uri) {
+                            //newFood = new Food(edit_description.getText().toString(), edit_discount.getText().toString(), uri.toString(), edit_name.getText().toString(), edit_price.getText().toString(), UserInfo.instance.id);
+                            item.setDescription(edit_description.getText().toString());
+                            item.setDiscount(edit_discount.getText().toString());
+                            item.setImage(uri.toString());
+                            item.setName(edit_name.getText().toString());
+                            item.setPrice(edit_price.getText().toString());
+                            item.setVendor(UserInfo.instance.id);
+
+                        }
+                    });
+                }
+            })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            mDialog.dismiss();
+                            Toast.makeText(MenuFragment.this.getContext(), ""+e.getMessage(), Toast.LENGTH_LONG).show();
+                        }
+                    })
+                    .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onProgress(@NonNull UploadTask.TaskSnapshot taskSnapshot) {
+                            double progess = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
+                            mDialog.setMessage("Uploading " + progess +"%");
+                        }
+                    });
+        }
     }
 }

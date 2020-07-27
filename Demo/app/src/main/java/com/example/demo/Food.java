@@ -6,10 +6,6 @@ public class Food {
     private String image;
     private String name;
     private String price;
-    private int discount;
-    private String linkImage;
-    private String name;
-    private int price;
     private String vendor;
 
     public Food(){}
@@ -18,10 +14,6 @@ public class Food {
         this.description = description;
         this.discount = discount;
         this.image = image;
-    public Food(String description, int discount, String linkImage, String name, int price, String vendor) {
-        this.description = description;
-        this.discount = discount;
-        this.linkImage = linkImage;
         this.name = name;
         this.price = price;
         this.vendor = vendor;
@@ -49,20 +41,6 @@ public class Food {
 
     public void setImage(String image) {
         this.image = image;
-    public int getDiscount() {
-        return discount;
-    }
-
-    public void setDiscount(int discount) {
-        this.discount = discount;
-    }
-
-    public String getLinkImage() {
-        return linkImage;
-    }
-
-    public void setLinkImage(String linkImage) {
-        this.linkImage = linkImage;
     }
 
     public String getName() {
@@ -78,11 +56,6 @@ public class Food {
     }
 
     public void setPrice(String price) {
-    public int getPrice() {
-        return price;
-    }
-
-    public void setPrice(int price) {
         this.price = price;
     }
 
