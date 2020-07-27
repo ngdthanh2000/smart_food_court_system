@@ -10,14 +10,9 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.ProgressBar;
-import android.widget.Toast;
 
-import androidx.appcompat.widget.AlertDialogLayout;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -28,7 +23,14 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.squareup.picasso.Picasso;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
 
 public class MainUI extends AppCompatActivity implements  NavigationView.OnNavigationItemSelectedListener{
     private DrawerLayout drawer;
@@ -52,7 +54,7 @@ public class MainUI extends AppCompatActivity implements  NavigationView.OnNavig
         @Override
         protected Void doInBackground(Void... voids) {
 
-            readData(new MyCallback2() {
+            readData(new FoodReportCallBack() {
                 @Override
                 public void onCallBack3(List<FoodReport> value) {
                     final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
@@ -98,28 +100,6 @@ public class MainUI extends AppCompatActivity implements  NavigationView.OnNavig
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        View header = navigationView.getHeaderView(0);
-        TextView userName = (TextView)header.findViewById(R.id.uname_vendor);
-        userName.setText(UserInfo.instance.getUserName());
-        final TextView name = (TextView)header.findViewById(R.id.name_vendor);
-        final ImageView img = (ImageView)header.findViewById(R.id.img_vendor);
-
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Category");
-        ref.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                String link = snapshot.child(UserInfo.instance.getId()).child("image").getValue().toString();
-                Picasso.with(getBaseContext()).load(link).into(img);
-                name.setText(snapshot.child(UserInfo.instance.getId()).child("name").getValue().toString());
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
-
-
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar,R.string.navigation_drawer_open,R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
@@ -128,6 +108,69 @@ public class MainUI extends AppCompatActivity implements  NavigationView.OnNavig
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new MenuFragment()).commit();
             navigationView.setCheckedItem(R.id.nav_menu);
         }
+    }
+
+    private void readData(final FoodReportCallBack myCallback) {
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("Vendors").child(UserInfo.instance.getUserName()).child("completed_orders");
+        ref.orderByChild("date").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                List<FoodReport> foodReports = new ArrayList<FoodReport>();
+                List<FoodInfo> foodInfos = UserInfo.instance.getFood();
+                if (snapshot.getChildrenCount() > 0) {
+                    for (DataSnapshot data : snapshot.getChildren()) {
+                        Order order = data.getValue(Order.class);
+                        for (OrderFood orderFood : order.getFoods()) {
+                            Log.d("ORDERFOOD", order.getDate() + " " + orderFood.getName() + " " + orderFood.getQuantity());
+                        }
+                        SimpleDateFormat sdf1 = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy");
+                        SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd");
+                        try {
+                            Date date = sdf1.parse(order.getDate());
+                            String strDate = sdf2.format(date);
+
+                            boolean isExists = false;
+                            FoodReport foodReport = null;
+
+                            for (FoodReport food : foodReports) {
+                                if (strDate.equals(food.getDate())) {
+                                    isExists = true;
+                                    foodReport = food;
+                                }
+                            }
+
+                            if (!isExists) {
+                                List<FoodInfo> foodInfos1 = new ArrayList<>();
+                                for (int i = 0 ; i < foodInfos.size(); i++) {
+                                    foodInfos1.add(new FoodInfo(foodInfos.get(i)));
+                                }
+                                foodReport = new FoodReport(strDate, foodInfos1);
+                                foodReports.add(foodReport);
+                            }
+
+                            for (OrderFood orderFood : order.getFoods()) {
+                                for (FoodInfo foodInfo : foodReport.getFoods()) {
+                                    if (orderFood.getName().equals(foodInfo.getName())) {
+                                        foodInfo.setQuantity(foodInfo.getQuantity() + Integer.parseInt(orderFood.getQuantity()));
+                                    }
+                                }
+                            }
+
+                            Log.d("FOODSIZE", String.valueOf(foodReports.size()));
+
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    myCallback.onCallBack3(foodReports);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 
     @Override

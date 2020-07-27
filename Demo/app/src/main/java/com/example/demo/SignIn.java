@@ -5,8 +5,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.nfc.Tag;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -19,16 +19,16 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+;import java.util.ArrayList;
+import java.util.List;
+
 public class SignIn extends AppCompatActivity {
-    //EditText editID, editPass;
     Button btnSignIn;
     DatabaseReference ref;
-    UserInfo userInfo = new UserInfo();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_in);
-
         btnSignIn = (Button)findViewById(R.id.btnSignIn);
 
         btnSignIn.setOnClickListener(new View.OnClickListener() {
@@ -44,19 +44,33 @@ public class SignIn extends AppCompatActivity {
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         String inputID = ((EditText)findViewById(R.id.editID)).getText().toString();
                         String inputPass = ((EditText)findViewById(R.id.editPass)).getText().toString();
+                        UserInfo.instance.setUserName(inputID);
+                        Log.d("USERNAME", UserInfo.instance.getUserName().substring(UserInfo.instance.getUserName().length() - 2));
+                        //String dataPass = snapshot.child(inputID).child("password").getValue().toString();
                         if (snapshot.child(inputID).exists()){
                             mDialog.dismiss();
-                            userInfo.setUserName(inputID);
-                            userInfo.setId(snapshot.child(inputID).child("id").getValue().toString());
-                            userInfo.setName(snapshot.child(inputID).child("name").getValue().toString());
                             String dataPass = snapshot.child(inputID).child("password").getValue().toString();
                             if (dataPass.contentEquals(inputPass)){
                                 Toast.makeText(SignIn.this, "Sign In Successfully!", Toast.LENGTH_SHORT).show();
-                                Intent mainUI = new Intent(SignIn.this, MainUI.class);
-                                userInfo.setPass(snapshot.child(inputID).child("password").getValue().toString());
-                                UserInfo.instance = userInfo;
-                                startActivity(mainUI);
-                                finish();
+
+                                readData2(new FoodInfoCallBack() {
+
+                                    @Override
+                                    public void onCallBack2(List<FoodInfo> value) throws Exception {
+                                        UserInfo.instance.setFood(value);
+                                    }
+                                });
+
+
+                                final Handler handler = new Handler();
+                                handler.postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Intent mainUI = new Intent(SignIn.this, MainUI.class);
+                                        startActivity(mainUI);
+                                        finish();
+                                    }
+                                }, 1000);
                             }
                             else {
                                 Toast.makeText(SignIn.this, "Wrong Password!", Toast.LENGTH_SHORT).show();
@@ -77,4 +91,35 @@ public class SignIn extends AppCompatActivity {
         });
 
     }
+
+    private void readData2(final FoodInfoCallBack myCallback) {
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference().child("Food");
+        reference.orderByChild("vendor").equalTo(UserInfo.instance.getUserName().substring(UserInfo.instance.getUserName().length() - 2)).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.getChildrenCount() > 0) {
+                    List<FoodInfo> tempFoods = new ArrayList<FoodInfo>();
+                    for (DataSnapshot data : snapshot.getChildren()) {
+                        FoodInfo foodInfo = data.getValue(FoodInfo.class);
+                        tempFoods.add(foodInfo);
+                    }
+
+                    try {
+                        myCallback.onCallBack2(tempFoods);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
+
 }

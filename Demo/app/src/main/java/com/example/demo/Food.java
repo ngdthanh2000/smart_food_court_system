@@ -2,18 +2,18 @@ package com.example.demo;
 
 public class Food {
     private String description;
-    private String discount;
-    private String image;
+    private int discount;
+    private String linkImage;
     private String name;
-    private String price;
+    private int price;
     private String vendor;
 
     public Food(){}
 
-    public Food(String description, String discount, String image, String name, String price, String vendor) {
+    public Food(String description, int discount, String linkImage, String name, int price, String vendor) {
         this.description = description;
         this.discount = discount;
-        this.image = image;
+        this.linkImage = linkImage;
         this.name = name;
         this.price = price;
         this.vendor = vendor;
@@ -27,20 +27,20 @@ public class Food {
         this.description = description;
     }
 
-    public String getDiscount() {
+    public int getDiscount() {
         return discount;
     }
 
-    public void setDiscount(String discount) {
+    public void setDiscount(int discount) {
         this.discount = discount;
     }
 
-    public String getImage() {
-        return image;
+    public String getLinkImage() {
+        return linkImage;
     }
 
-    public void setImage(String image) {
-        this.image = image;
+    public void setLinkImage(String linkImage) {
+        this.linkImage = linkImage;
     }
 
     public String getName() {
@@ -51,11 +51,11 @@ public class Food {
         this.name = name;
     }
 
-    public String getPrice() {
+    public int getPrice() {
         return price;
     }
 
-    public void setPrice(String price) {
+    public void setPrice(int price) {
         this.price = price;
     }
 

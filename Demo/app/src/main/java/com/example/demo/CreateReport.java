@@ -1,7 +1,6 @@
 package com.example.demo;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.print.PrintAttributes;
 import android.print.PrintDocumentAdapter;
@@ -22,7 +21,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.NumberFormat;
@@ -34,7 +32,6 @@ import java.util.List;
 public class CreateReport extends AppCompatActivity {
 
     WebView webView;
-    StringBuffer monthBuf = new StringBuffer();
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -68,29 +65,54 @@ public class CreateReport extends AppCompatActivity {
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
 
-        try {
-            createPDFFile(Common.getAppPath(UserInfo.instance.getContext()) + "test.pdf");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        generateReport();
 
     }
 
-
-    private void createPDFFile(final String path) throws IOException {
+    /**
+     * Generate a friendly, readable report on user's screen. The report includes a table with
+     * consumed foods info, some charts to visualize data, etc.
+     * The report is created based on html-css file, which makes it esay for exporting later.
+     */
+    private void generateReport() {
 
         final NumberFormat numberFormat = NumberFormat.getInstance();
         numberFormat.setGroupingUsed(true);
 
-            readData(new MyCallback() {
-                @Override
-                public void onCallBack1(ArrayList<DateObject> value) {
-                    return;
-                }
+            readData(new FoodInfoCallBack() {
 
                 @Override
                 public void onCallBack2(List<FoodInfo> value) throws Exception {
 
+                    List<FoodReport> foodReports = UserInfo.instance.getFoodReports();
+                    ArrayList<Long> revenue = new ArrayList<>();
+                    ArrayList<Integer> order = new ArrayList<>();
+                    for (int i = 0; i < 4; i++) {
+                        revenue.add((long) 0);
+                        order.add(0);
+                    }
+
+                    for (FoodReport foodReport : foodReports) {
+                        if (Integer.parseInt(UserInfo.instance.getMonth()) == Integer.parseInt(foodReport.getDate().substring(5, 7))) {
+                            int date = Integer.parseInt(foodReport.getDate().substring(8));
+                            int i = 0;
+                            if (date <= 7) {
+                                i = 0;
+                            } else if (date <= 15) {
+                                i = 1;
+                            } else if (date <= 23) {
+                                i = 2;
+                            } else {
+                                i = 3;
+                            }
+                            order.set(i, order.get(i) + 1);
+                            int rev = 0;
+                            for (FoodInfo foodInfo : foodReport.getFoods()) {
+                                rev += Integer.parseInt(foodInfo.getPrice()) * foodInfo.getQuantity();
+                            }
+                            revenue.set(i, revenue.get(i) + rev);
+                        }
+                    }
                     InputStream inputStream = getAssets().open("pdfdata.html");
                     String str = "";
                     StringBuffer buf = new StringBuffer();
@@ -164,18 +186,40 @@ public class CreateReport extends AppCompatActivity {
                             "        chart.draw(data, options);\n" +
                             "      }\n");
 
+                    buf.append("function drawLineChart() {\n" +
+                            "    var data = new google.visualization.DataTable();\n" +
+                            "\tdata.addColumn('string', 'Date');\n" +
+                            "\tdata.addColumn('number', 'Order');\n" +
+                            "\tdata.addColumn('number', 'Revenue');\n" +
+                            "\tdata.addRows([\n");
+                    buf.append("['01 - 07', " + order.get(0) + "," + revenue.get(0) + "],\n");
+                    buf.append("['08 - 15', " + order.get(1) + "," + revenue.get(1) + "],\n");
+                    buf.append("['16 - 23', " + order.get(2) + "," + revenue.get(2) + "],\n");
+                    buf.append("['24 - 31', " + order.get(3) + "," + revenue.get(3) + "]\n");
 
+                    buf.append("    ]);\n" +
+                            "    var options = {\n" +
+                            "    title:'Orders and revenues by week',\n" +
+                            "\tseries: {\n" +
+                            "\t\t0: {targetAxisIndex: 0},\n" +
+                            "\t\t1: {targetAxisIndex: 1}\n" +
+                            "\t\t},\n" +
+                            "\tvAxes: {\n" +
+                            "\t\t\t0: {title: 'Number of Order'},\n" +
+                            "\t\t\t1: {title: 'Revenue (VND)'}\n" +
+                            "\t}\n" +
+                            "    };\n" +
+                            "\t\n" +
+                            "\tvar chart = new google.visualization.LineChart(document.getElementById('barchart'));\n" +
+                            "\tchart.draw(data, options);\n" +
+                            "\t}");
 
                     buf.append("    </script>\n" +
                             "  </head>\n");
 
                     buf.append("<body>\n" +
-                            "<h1 class=\"title\">Countries and Movies</h1>\n" +
-                            "<p>This is an overview of all the countries in our movie database.</p>\n" +
-                            "<p>\n" +
-                            "<h1 class=\"country\">Argentina</h1>\n" +
-                            "<p>This is a table containing all the movies that were entirely or partially produced in Argentina:</p>\n" +
-                            "</p>\n" +
+                            "<h1 class=\"title\">Consume Food In Entire Month</h1>\n" +
+                            "<p>This is an overview of all the consumed food in month.</p>\n" +
                             "<table>\n" +
                             "<tr class=\"movierow\"><th class=\"column1\">No.</th><th class=\"column2\">Name</th><th class=\"column3\">Price</th><th class=\"column4\">Quantity</th><th class=\"column5\">Revenue</th></tr>\n");
 
@@ -213,6 +257,7 @@ public class CreateReport extends AppCompatActivity {
 
                     buf.append("    <div id=\"quantity_chart_div\"></div>\n" +
                                     "    <div id=\"revenue_chart_div\"></div>\n" +
+                            "<div id=\"barchart\", style=\"width: 300px; height: 200px;\"></div>\n" +
                             "  </body>\n" +
                             "</html>");
 
@@ -228,6 +273,10 @@ public class CreateReport extends AppCompatActivity {
             });
     }
 
+    /**
+     * Calling system's service to print the current report, or export it to PDF file type.
+     * @param webView a reference to the webView which displays the report.
+     */
     private void printPDF(WebView webView) {
         PrintManager printManager = (PrintManager)getSystemService(Context.PRINT_SERVICE);
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
@@ -245,7 +294,11 @@ public class CreateReport extends AppCompatActivity {
     }
 
 
-    private void readData(final MyCallback myCallback) {
+    /**
+     * Read the data about all the orders in specific month from Firebase Realtime Database.
+     * @param myCallback a reference to FoodInfoCallBack interface
+     */
+    private void readData(final FoodInfoCallBack myCallback) {
 
         final int month = Integer.parseInt(UserInfo.instance.getMonth());
 

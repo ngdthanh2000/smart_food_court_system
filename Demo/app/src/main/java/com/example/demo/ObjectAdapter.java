@@ -2,8 +2,6 @@ package com.example.demo;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,28 +9,12 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.gms.common.data.DataBufferObserverSet;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-import com.itextpdf.kernel.geom.Line;
-import com.karumi.dexter.Dexter;
-
-import org.w3c.dom.Text;
-
 import java.text.DateFormatSymbols;
 import java.text.NumberFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class ObjectAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -144,7 +126,6 @@ public class ObjectAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                     @Override
                     public void onClick(View view) {
                         UserInfo.instance.setMonth(month);
-                        Intent intent = new Intent(context, CreateReport.class);
                         context.startActivity(new Intent(context, CreateReport.class));
                     }
                 });
@@ -185,12 +166,14 @@ public class ObjectAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                     TextView textViewFoodName = new TextView(linearLayout1.getContext());
                     textViewFoodName.setLayoutParams(params);
                     textViewFoodName.setText(foodReport.getFoods().get(j).getName());
+                    textViewFoodName.setTextColor(linearLayout1.getResources().getColor(R.color.blackText));
                     linearLayout1.addView(textViewFoodName);
 
                     TableRow.LayoutParams params1 = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT);
                     params1.setMargins(0, 15, 10, 15);
                     TextView textViewRevenue = new TextView(linearLayout1.getContext());
                     textViewRevenue.setLayoutParams(params1);
+                    textViewRevenue.setTextColor(linearLayout1.getResources().getColor(R.color.blueText));
                     textViewRevenue.setText(numberFormat.format(Integer.parseInt(foodReport.getFoods().get(j).getPrice()) * foodReport.getFoods().get(j).getQuantity()));
                     linearLayout1.addView(textViewRevenue);
 
@@ -199,17 +182,6 @@ public class ObjectAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
                 break;
         }
-
-
-
-        /*button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                UserInfo.instance.setDate(mObjects.get(holder.getAdapterPosition()).getDate());
-                Intent intent = new Intent(view.getContext(), CreateReport.class);
-                view.getContext().startActivity(intent);
-            }
-        });*/
     }
 
     @Override
