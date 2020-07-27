@@ -2,11 +2,14 @@ package com.ngsown.ordermanagementapplication
 
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
-import android.widget.ListView
+import android.view.Menu
+import android.widget.TextView
+import androidx.appcompat.widget.Toolbar
+import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.navigation.NavigationView
 import com.google.firebase.database.*
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
@@ -17,10 +20,24 @@ import kotlinx.android.synthetic.main.activity_managing.*
 
 class ManagingActivity : AppCompatActivity() {
     private lateinit var linearLayoutManager: LinearLayoutManager
+    private lateinit var drawerLayout: DrawerLayout
+    private lateinit var navigationView: NavigationView
+    private lateinit var toolbar: Toolbar
+    private lateinit var menu: Menu
+    //private lateinit var textView: TextView
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_managing)
+        //region Menu
+        drawerLayout = findViewById(R.id.drawer_layout)
+        navigationView = findViewById(R.id.nav_view)
+        toolbar = findViewById(R.id.toolbar)
+        setSupportActionBar(toolbar)
+        var toggle = ActionBarDrawerToggle(this, drawerLayout,toolbar,R.string.nav_open_drawer, R.string.nav_close_drawer)
+        drawerLayout.addDrawerListener(toggle)
+        toggle.syncState()
 
+        //endregion
         //region RecyclerView
         linearLayoutManager = LinearLayoutManager(this)
         lsRequest.layoutManager = linearLayoutManager

@@ -24,10 +24,10 @@ class LoginActivity : AppCompatActivity() {
         var password: EditText = findViewById(R.id.edtPassword)
         //region Get previous session preferences
         val pref = getSharedPreferences("PREF", Context.MODE_PRIVATE)
-        boxRemember.isChecked = pref.getBoolean("rememberBox",true)
+        boxRemember.isChecked = pref.getBoolean("rememberBox",false)
         if (boxRemember.isChecked){
-            username.setText(pref.getString("savedUsername", "none"))
-            password.setText(pref.getString("savedPassword", "none"))
+            username.setText(pref.getString("savedUsername", ""))
+            password.setText(pref.getString("savedPassword", ""))
         }
         else{
             username.setText("")
