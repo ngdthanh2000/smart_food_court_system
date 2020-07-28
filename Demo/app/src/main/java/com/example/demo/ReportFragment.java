@@ -1,16 +1,26 @@
 package com.example.demo;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.material.tabs.TabLayout;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -19,6 +29,7 @@ import java.util.List;
  * create an instance of this fragment.
  */
 public class ReportFragment extends Fragment {
+
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -56,6 +67,7 @@ public class ReportFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         if (getArguments() != null) {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
@@ -92,7 +104,8 @@ public class ReportFragment extends Fragment {
         }
 
 
-        FragmentAdapter pagerAdapter = new FragmentAdapter(getFragmentManager(), getContext(), fragments);
+        //FragmentAdapter pagerAdapter = new FragmentAdapter(getFragmentManager(), getContext(), fragments);
+        FragmentAdapter pagerAdapter = new FragmentAdapter(getChildFragmentManager(), getContext(), fragments);
         viewPager.setAdapter(pagerAdapter);
 
         tabLayout.setupWithViewPager(viewPager);
@@ -114,6 +127,69 @@ public class ReportFragment extends Fragment {
 
         return view;
 
+    }
+
+    private void readData(final FoodReportCallBack myCallback) {
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("Vendors").child(UserInfo.instance.getUserName()).child("completed_orders");
+        ref.orderByChild("date").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                List<FoodReport> foodReports = new ArrayList<FoodReport>();
+                List<FoodInfo> foodInfos = UserInfo.instance.getFood();
+                if (snapshot.getChildrenCount() > 0) {
+                    for (DataSnapshot data : snapshot.getChildren()) {
+                        Order order = data.getValue(Order.class);
+                        for (OrderFood orderFood : order.getFoods()) {
+                            Log.d("ORDERFOOD", order.getDate() + " " + orderFood.getName() + " " + orderFood.getQuantity());
+                        }
+                        SimpleDateFormat sdf1 = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy");
+                        SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd");
+                        try {
+                            Date date = sdf1.parse(order.getDate());
+                            String strDate = sdf2.format(date);
+
+                            boolean isExists = false;
+                            FoodReport foodReport = null;
+
+                            for (FoodReport food : foodReports) {
+                                if (strDate.equals(food.getDate())) {
+                                    isExists = true;
+                                    foodReport = food;
+                                }
+                            }
+
+                            if (!isExists) {
+                                List<FoodInfo> foodInfos1 = new ArrayList<>();
+                                for (int i = 0 ; i < foodInfos.size(); i++) {
+                                    foodInfos1.add(new FoodInfo(foodInfos.get(i)));
+                                }
+                                foodReport = new FoodReport(strDate, foodInfos1);
+                                foodReports.add(foodReport);
+                            }
+
+                            for (OrderFood orderFood : order.getFoods()) {
+                                for (FoodInfo foodInfo : foodReport.getFoods()) {
+                                    if (orderFood.getName().equals(foodInfo.getName())) {
+                                        foodInfo.setQuantity(foodInfo.getQuantity() + Integer.parseInt(orderFood.getQuantity()));
+                                    }
+                                }
+                            }
+
+                            Log.d("FOODSIZE", String.valueOf(foodReports.size()));
+
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    myCallback.onCallBack3(foodReports);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 
 }

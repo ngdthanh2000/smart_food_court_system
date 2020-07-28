@@ -1,17 +1,16 @@
 package com.example.demo;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -19,8 +18,10 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-;import java.util.ArrayList;
+import java.util.ArrayList;
 import java.util.List;
+
+;
 
 public class SignIn extends AppCompatActivity {
     Button btnSignIn;
@@ -42,15 +43,14 @@ public class SignIn extends AppCompatActivity {
                 ref.addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        String inputID = ((EditText)findViewById(R.id.editID)).getText().toString();
-                        String inputPass = ((EditText)findViewById(R.id.editPass)).getText().toString();
+                        String inputID = ((EditText) findViewById(R.id.editID)).getText().toString();
+                        String inputPass = ((EditText) findViewById(R.id.editPass)).getText().toString();
                         UserInfo.instance.setUserName(inputID);
-                        Log.d("USERNAME", UserInfo.instance.getUserName().substring(UserInfo.instance.getUserName().length() - 2));
                         //String dataPass = snapshot.child(inputID).child("password").getValue().toString();
-                        if (snapshot.child(inputID).exists()){
+                        if (snapshot.child(inputID).exists()) {
                             mDialog.dismiss();
                             String dataPass = snapshot.child(inputID).child("password").getValue().toString();
-                            if (dataPass.contentEquals(inputPass)){
+                            if (dataPass.contentEquals(inputPass)) {
                                 Toast.makeText(SignIn.this, "Sign In Successfully!", Toast.LENGTH_SHORT).show();
 
                                 readData2(new FoodInfoCallBack() {
@@ -71,12 +71,10 @@ public class SignIn extends AppCompatActivity {
                                         finish();
                                     }
                                 }, 1000);
-                            }
-                            else {
+                            } else {
                                 Toast.makeText(SignIn.this, "Wrong Password!", Toast.LENGTH_SHORT).show();
                             }
-                        }
-                        else{
+                        } else {
                             mDialog.dismiss();
                             Toast.makeText(SignIn.this, "User not exist!", Toast.LENGTH_SHORT).show();
                         }
@@ -89,7 +87,6 @@ public class SignIn extends AppCompatActivity {
                 });
             }
         });
-
     }
 
     private void readData2(final FoodInfoCallBack myCallback) {

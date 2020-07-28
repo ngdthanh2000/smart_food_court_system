@@ -7,13 +7,10 @@ import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import java.util.ArrayList;
-
 public class MainActivity extends AppCompatActivity {
 
     Button btnSignIn;
-
-    private static final String SHARED_PREFS_NAME = "MY_SHARED_PREF";
+    UserInfo userInfo = new UserInfo();
 
 
     @Override

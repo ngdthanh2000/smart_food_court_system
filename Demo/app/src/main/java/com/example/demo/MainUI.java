@@ -1,9 +1,5 @@
 package com.example.demo;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
@@ -13,6 +9,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -45,7 +44,7 @@ public class MainUI extends AppCompatActivity implements  NavigationView.OnNavig
         protected void onPreExecute() {
             super.onPreExecute();
             progressDialog = new ProgressDialog(MainUI.this);
-            progressDialog.setMessage("Loading Data... Please Wait!");
+            progressDialog.setMessage("Loading Data...");
             progressDialog.setIndeterminate(false);
             progressDialog.setCancelable(false);
             progressDialog.show();
