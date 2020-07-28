@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -30,7 +31,6 @@ class ManagingActivity : AppCompatActivity() {
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var navigationView: NavigationView
     private lateinit var toolbar: Toolbar
-    private lateinit var menu: Menu
 
     //private lateinit var textView: TextView
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,10 +53,6 @@ class ManagingActivity : AppCompatActivity() {
 
         navigationView.setNavigationItemSelectedListener{
             when (it.itemId){
-                R.id.nav_canceled -> {
-                    Toast.makeText(this ,"Canceled Orders", Toast.LENGTH_SHORT)
-                    drawerLayout.closeDrawer(GravityCompat.START)
-                }
                 R.id.nav_logout -> {
                     Toast.makeText(this ,"Log out", Toast.LENGTH_SHORT)
                     showLogoutDialog()
@@ -103,7 +99,8 @@ class ManagingActivity : AppCompatActivity() {
                         food.child("vendor").value.toString(),
                         food.child("price").value.toString(),
                         food.child("productId").value.toString(),
-                        food.child("discount").value.toString()
+                        food.child("discount").value.toString(),
+                        food.child("status").value.toString()
                     )
                     // Only get foods of current vendor
                     if (food_info.vendor == vendorId) {
@@ -126,13 +123,17 @@ class ManagingActivity : AppCompatActivity() {
                     if (req.foods.isNotEmpty())
                         newRequestList.add(req)
                 }
-                //region ListView Declaration
-                //var list = findViewById<ListView>(R.id.lsRequest)
-                //list.adapter = ListAdapter(this@ManagingActivity, newRequestList)
-                //endregion
+                if (newRequestList.isEmpty()){
+                    empty_view.bringToFront()
+                    empty_view.visibility = View.VISIBLE
+                    lsRequest.visibility = View.GONE
 
-                //region Recycler Declaration
-                //var list = findViewById<RecyclerView>(R.id.lsRequest)
+                }
+                else {
+                    lsRequest.visibility = View.VISIBLE
+                    empty_view.visibility = View.GONE
+                }
+                Log.d("Number of request", newRequestList.size.toString())
                 lsRequest.adapter = RecyclerAdapter(this@ManagingActivity, newRequestList)
                 //endregion
                 allRequestList.addAll(newRequestList)
@@ -146,13 +147,13 @@ class ManagingActivity : AppCompatActivity() {
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawer(GravityCompat.START)
         } else {
-            super.onBackPressed()
+            showLogoutDialog()
         }
     }
     private fun showLogoutDialog(){
         var dialog = AlertDialog.Builder(this)
         dialog.setTitle("Log out")
-        dialog.setMessage("Are you sure to log out?")
+        dialog.setMessage("Do you want to log out?")
         dialog.setPositiveButton("Yes",
             DialogInterface.OnClickListener { dialog, which ->
                 val intent: Intent = Intent(this, LoginActivity::class.java)

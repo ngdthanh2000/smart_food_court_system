@@ -2,4 +2,10 @@
     <string name="app_name">Order Management Application</string>
     <string name="nav_open_drawer">Open</string>
     <string name="nav_close_drawer">Close</string>
+    <string name="no_order_at_the_moment">No order at the moment</string>
+    <string name="remember_me">Remember me</string>
+    <string name="login">Login</string>
+    <string name="login_with_admin">Login with admin account</string>
+    <string name="welcome">Welcome</string>
+    <string name="menu">Menu</string>
 </resources>

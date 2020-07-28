@@ -8,7 +8,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.database.*
 import com.google.firebase.database.ktx.database
@@ -57,7 +56,7 @@ class RecyclerAdapter(var context: Activity, private var list: ArrayList<Request
         }
 
         //region Order Interaction
-        private fun updateDatabase(itemIndex: Int){
+        private fun updateCompleteOrder(itemIndex: Int){
             //region Update completed order
             var completedOrder = CompletedOrder(list[itemIndex].foods, list[itemIndex].id, list[itemIndex].owner,
                 list[itemIndex].date)
@@ -201,7 +200,7 @@ class RecyclerAdapter(var context: Activity, private var list: ArrayList<Request
             dialog.setPositiveButton("Yes",
                 DialogInterface.OnClickListener { dialog, which ->
                     // Push complete order to database and remove it from view
-                    updateDatabase(itemIndex)
+                    updateCompleteOrder(itemIndex)
                 })
             dialog.setNegativeButton("No",
                 DialogInterface.OnClickListener { dialog, which ->
@@ -224,13 +223,39 @@ class RecyclerAdapter(var context: Activity, private var list: ArrayList<Request
                 })
             dialog.show()
         }
+        private fun updatePrepareOrder(itemIndex: Int){
+            //region Update completed order
+            var preparingOrder = CompletedOrder(list[itemIndex].foods, list[itemIndex].id, list[itemIndex].owner,
+                list[itemIndex].date)
+            var firebaseDB: DatabaseReference = Firebase.database.reference
+            val pref = view.context.getSharedPreferences("PREF", Context.MODE_PRIVATE)
+
+            var foods = firebaseDB.child("Request").child(list[itemIndex].request_key).child("foods").ref
+
+            foods.addValueEventListener(object : ValueEventListener {
+                override fun onCancelled(error: DatabaseError) {
+                    TODO("Not yet implemented")
+                }
+
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    for ((i, food) in snapshot.children.withIndex()){
+                        if (snapshot.child(i.toString()).child("vendor").value.toString() == pref.getString("vendor_id", "null")!!) {
+                            foods.child(i.toString()).updateChildren(mapOf<String, String>(Pair("status", "Preparing")))
+                        }
+                    }
+                }
+
+            })
+            //endregion
+        }
         private fun showPrepareDialog(p0: Int){
             var dialog = AlertDialog.Builder(view.context)
             dialog.setTitle("Confirmation")
             dialog.setMessage("Start preparing this order?")
             dialog.setPositiveButton("Yes",
                 DialogInterface.OnClickListener { dialog, which ->
-                    list[p0].status = "Preparing"
+                    updatePrepareOrder(p0)
+                    //list[p0].status = "Preparing"
                     //var txtStatus = view.findViewById<TextView>(R.id.txtOrderStatus)
                     view.txtOrderStatus.text = "Preparing"
 
@@ -251,7 +276,7 @@ class RecyclerAdapter(var context: Activity, private var list: ArrayList<Request
             }
             tempFoodName.dropLast(1)
             view.txtFoodName.text = tempFoodName
-            view.txtOrderStatus.text = request.status
+            view.txtOrderStatus.text = request.foods[0].status
             view.txtOrderTimer.text = request.date
         }
 

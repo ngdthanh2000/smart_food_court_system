@@ -58,7 +58,6 @@ class LoginActivity : AppCompatActivity() {
         username.setText("")
         password.setText("")*/
         Toast.makeText(this, "Login successfully", Toast.LENGTH_SHORT).show()
-
         loadOrderActivity()
     }
     private fun loginFail(){
@@ -68,7 +67,7 @@ class LoginActivity : AppCompatActivity() {
         //Log.d("authorizing",input.username + " " + input.password)
         var firebaseDB: DatabaseReference = Firebase.database.reference
         var vendorsDB = firebaseDB.child("Vendors").ref
-        vendorsDB.addValueEventListener( object : ValueEventListener {
+        vendorsDB.addListenerForSingleValueEvent( object : ValueEventListener {
             override fun onCancelled(error: DatabaseError) {
                 TODO("Not yet implemented")
             }

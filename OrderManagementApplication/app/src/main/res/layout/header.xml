@@ -14,7 +14,7 @@
         android:layout_margin="20dp"
         android:layout_marginLeft="50dp"
         android:fontFamily="@font/sitka_banner"
-        android:text="Menu"
+        android:text="@string/menu"
         android:textColor="#FFFFFF"
         android:textSize="50sp" />
 
