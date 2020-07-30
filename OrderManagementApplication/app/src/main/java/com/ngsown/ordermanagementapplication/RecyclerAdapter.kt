@@ -14,8 +14,13 @@ import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import kotlinx.android.synthetic.main.order_row_view.view.*
 
+/*
+    - Adapter for RecyclerView that show all Order on the screen
+    - Interactions with order are also implemented here
+ */
+
 class RecyclerAdapter(var context: Activity, private var list: ArrayList<Request>) : RecyclerView.Adapter<RecyclerAdapter.OrderHolder>() {
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerAdapter.OrderHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): OrderHolder {
         var inflater = LayoutInflater.from(context)
         var view = inflater.inflate(R.layout.order_row_view, parent, false);
         return OrderHolder(view, list)
@@ -25,15 +30,10 @@ class RecyclerAdapter(var context: Activity, private var list: ArrayList<Request
         return list.size
     }
 
-    override fun onBindViewHolder(holder: RecyclerAdapter.OrderHolder, position: Int) {
+    override fun onBindViewHolder(holder: OrderHolder, position: Int) {
         var request = list[position]
         holder.bindRequest(request)
     }
-    companion object {
-
-    }
-
-
 
     class OrderHolder(v: View, l: ArrayList<Request>) : RecyclerView.ViewHolder(v), View.OnClickListener {
 
@@ -42,7 +42,7 @@ class RecyclerAdapter(var context: Activity, private var list: ArrayList<Request
         init {
             v.setOnClickListener(this)
             v.setOnLongClickListener {
-
+                // Long click an order to cancel it
                 showCancelDialog(adapterPosition)
                 true
             }
@@ -58,7 +58,7 @@ class RecyclerAdapter(var context: Activity, private var list: ArrayList<Request
         //region Order Interaction
         private fun updateCompleteOrder(itemIndex: Int){
             //region Update completed order
-            var completedOrder = CompletedOrder(list[itemIndex].foods, list[itemIndex].id, list[itemIndex].owner,
+            var completedOrder = Order(list[itemIndex].foods, list[itemIndex].id, list[itemIndex].owner,
                 list[itemIndex].date)
             var firebaseDB: DatabaseReference = Firebase.database.reference
             val pref = view.context.getSharedPreferences("PREF", Context.MODE_PRIVATE)
@@ -67,7 +67,7 @@ class RecyclerAdapter(var context: Activity, private var list: ArrayList<Request
 
             ordersDB.push().setValue(completedOrder)
             // Remove completed from view by deleting it from database
-            var requestDB = firebaseDB.child("Request").child(list[itemIndex].request_key).child("foods").ref
+            var requestDB = firebaseDB.child("Request").child(list[itemIndex].requestKey).child("foods").ref
 
             requestDB.addValueEventListener(object : ValueEventListener {
                 override fun onCancelled(error: DatabaseError) {
@@ -77,23 +77,23 @@ class RecyclerAdapter(var context: Activity, private var list: ArrayList<Request
                 override fun onDataChange(snapshot: DataSnapshot) {
                     if (!snapshot.hasChildren()){
                         var firebaseDB: DatabaseReference = Firebase.database.reference
-                        var request = firebaseDB.child("Request").child(list[itemIndex].request_key).ref
+                        var request = firebaseDB.child("Request").child(list[itemIndex].requestKey).ref
                         request.removeValue()
                     }
                 }
 
             })
-            for (food in list[itemIndex].food_index){
+            for (food in list[itemIndex].foodIndex){
                 requestDB.child(food).removeValue()
             }
             //endregion
             //region Update PlacedOrder Database
             var placedOrderDB = firebaseDB.child("PlacedOrder").ref
 
-            var query: Query = placedOrderDB.orderByChild("id").equalTo(completedOrder.id.toDouble())
+            var query: Query = placedOrderDB.orderByChild("id").equalTo(completedOrder.id)
             var foods : DatabaseReference
 
-            query.addValueEventListener(object : ValueEventListener{
+            query.addValueEventListener(object : ValueEventListener {
                 override fun onCancelled(error: DatabaseError) {
                     TODO("Not yet implemented")
                 }
@@ -103,7 +103,7 @@ class RecyclerAdapter(var context: Activity, private var list: ArrayList<Request
                         //Log.d("orderkey", order.key.toString())
                         foods = query.ref.child(order.key.toString()).child("foods").ref
 
-                        foods.addValueEventListener(object : ValueEventListener{
+                        foods.addValueEventListener(object : ValueEventListener {
                             override fun onCancelled(error: DatabaseError) {
                                 TODO("Not yet implemented")
                             }
@@ -126,9 +126,25 @@ class RecyclerAdapter(var context: Activity, private var list: ArrayList<Request
             //endregion
 
         }
-        private fun cancelOrder(itemIndex: Int){
+        private fun showCompleteDialog(itemIndex: Int){
+            var dialog = AlertDialog.Builder(view.context)
+            dialog.setTitle("Confirmation")
+            dialog.setMessage("Complete this order and notify customer?")
+            dialog.setPositiveButton("Yes",
+                DialogInterface.OnClickListener { dialog, which ->
+                    // Push complete order to database and remove it from view
+                    updateCompleteOrder(itemIndex)
+                })
+            dialog.setNegativeButton("No",
+                DialogInterface.OnClickListener { dialog, which ->
+                    // Do nothing
+                })
+            dialog.show()
+        }
+
+        private fun updateCanceledOrder(itemIndex: Int){
             //region Change order status to "Canceled"
-            var canceledOrder = CompletedOrder(list[itemIndex].foods, list[itemIndex].id, list[itemIndex].owner,
+            var canceledOrder = Order(list[itemIndex].foods, list[itemIndex].id, list[itemIndex].owner,
                 list[itemIndex].date)
 
             var firebaseDB: DatabaseReference = Firebase.database.reference
@@ -136,10 +152,10 @@ class RecyclerAdapter(var context: Activity, private var list: ArrayList<Request
 
             var placedOrderDB = firebaseDB.child("PlacedOrder").ref
 
-            var query: Query = placedOrderDB.orderByChild("id").equalTo(canceledOrder.id.toDouble())
+            var query: Query = placedOrderDB.orderByChild("id").equalTo(canceledOrder.id)
             var foods : DatabaseReference
 
-            query.addValueEventListener(object : ValueEventListener{
+            query.addValueEventListener(object : ValueEventListener {
                 override fun onCancelled(error: DatabaseError) {
                     TODO("Not yet implemented")
                 }
@@ -149,7 +165,7 @@ class RecyclerAdapter(var context: Activity, private var list: ArrayList<Request
                         //Log.d("orderkey", order.key.toString())
                         foods = query.ref.child(order.key.toString()).child("foods").ref
 
-                        foods.addValueEventListener(object : ValueEventListener{
+                        foods.addValueEventListener(object : ValueEventListener {
                             override fun onCancelled(error: DatabaseError) {
                                 TODO("Not yet implemented")
                             }
@@ -171,7 +187,7 @@ class RecyclerAdapter(var context: Activity, private var list: ArrayList<Request
             })
             //endregion
             //region Delete from Request DB
-            var requestDB = firebaseDB.child("Request").child(list[itemIndex].request_key).child("foods").ref
+            var requestDB = firebaseDB.child("Request").child(list[itemIndex].requestKey).child("foods").ref
 
             requestDB.addValueEventListener(object : ValueEventListener {
                 override fun onCancelled(error: DatabaseError) {
@@ -181,32 +197,17 @@ class RecyclerAdapter(var context: Activity, private var list: ArrayList<Request
                 override fun onDataChange(snapshot: DataSnapshot) {
                     if (!snapshot.hasChildren()){
                         var firebaseDB: DatabaseReference = Firebase.database.reference
-                        var request = firebaseDB.child("Request").child(list[itemIndex].request_key).ref
+                        var request = firebaseDB.child("Request").child(list[itemIndex].requestKey).ref
                         request.removeValue()
                     }
                 }
 
             })
-            for (food in list[itemIndex].food_index){
+            for (food in list[itemIndex].foodIndex){
                 requestDB.child(food).removeValue()
             }
             //endregion
 
-        }
-        private fun showCompleteDialog(itemIndex: Int){
-            var dialog = AlertDialog.Builder(view.context)
-            dialog.setTitle("Confirmation")
-            dialog.setMessage("Complete this order and notify customer?")
-            dialog.setPositiveButton("Yes",
-                DialogInterface.OnClickListener { dialog, which ->
-                    // Push complete order to database and remove it from view
-                    updateCompleteOrder(itemIndex)
-                })
-            dialog.setNegativeButton("No",
-                DialogInterface.OnClickListener { dialog, which ->
-                    // Do nothing
-                })
-            dialog.show()
         }
         private fun showCancelDialog(itemIndex: Int){
             var dialog = AlertDialog.Builder(view.context)
@@ -215,7 +216,7 @@ class RecyclerAdapter(var context: Activity, private var list: ArrayList<Request
             dialog.setPositiveButton("Yes",
                 DialogInterface.OnClickListener { dialog, which ->
                     // Push complete order to database and remove it from view
-                    cancelOrder(itemIndex)
+                    updateCanceledOrder(itemIndex)
                 })
             dialog.setNegativeButton("No",
                 DialogInterface.OnClickListener { dialog, which ->
@@ -223,14 +224,15 @@ class RecyclerAdapter(var context: Activity, private var list: ArrayList<Request
                 })
             dialog.show()
         }
-        private fun updatePrepareOrder(itemIndex: Int){
+
+        private fun updatePreparingOrder(itemIndex: Int){
             //region Update completed order
-            var preparingOrder = CompletedOrder(list[itemIndex].foods, list[itemIndex].id, list[itemIndex].owner,
+            var preparingOrder = Order(list[itemIndex].foods, list[itemIndex].id, list[itemIndex].owner,
                 list[itemIndex].date)
             var firebaseDB: DatabaseReference = Firebase.database.reference
             val pref = view.context.getSharedPreferences("PREF", Context.MODE_PRIVATE)
 
-            var foods = firebaseDB.child("Request").child(list[itemIndex].request_key).child("foods").ref
+            var foods = firebaseDB.child("Request").child(list[itemIndex].requestKey).child("foods").ref
 
             foods.addValueEventListener(object : ValueEventListener {
                 override fun onCancelled(error: DatabaseError) {
@@ -248,13 +250,13 @@ class RecyclerAdapter(var context: Activity, private var list: ArrayList<Request
             })
             //endregion
         }
-        private fun showPrepareDialog(p0: Int){
+        private fun showPrepareDialog(itemIndex: Int){
             var dialog = AlertDialog.Builder(view.context)
             dialog.setTitle("Confirmation")
             dialog.setMessage("Start preparing this order?")
             dialog.setPositiveButton("Yes",
                 DialogInterface.OnClickListener { dialog, which ->
-                    updatePrepareOrder(p0)
+                    updatePreparingOrder(itemIndex)
                     //list[p0].status = "Preparing"
                     //var txtStatus = view.findViewById<TextView>(R.id.txtOrderStatus)
                     view.txtOrderStatus.text = "Preparing"
@@ -281,5 +283,4 @@ class RecyclerAdapter(var context: Activity, private var list: ArrayList<Request
         }
 
     }
-
 }

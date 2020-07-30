@@ -1,5 +1,7 @@
 package com.ngsown.ordermanagementapplication
 
+// Requests of customers comprise of all foods that are requested by them
+// Customer may request foods from many vendors in a Request
 data class Request (
     var date: String = "",
     var foods: ArrayList<Food> = ArrayList(),
@@ -7,6 +9,6 @@ data class Request (
     var owner: String = "",
     var status: String = "",
     var total: String = "",
-    var request_key: String = "", // Needed for tracing back
-    var food_index: ArrayList<String> = ArrayList() // and delete
+    var requestKey: String = "", // Needed for tracing back
+    var foodIndex: ArrayList<String> = ArrayList() // and delete
 )

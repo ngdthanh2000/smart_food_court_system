@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
+    android:background="@drawable/row_view_background"
     android:padding="20dp">
     <LinearLayout
         android:layout_width="match_parent"
@@ -16,28 +18,32 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:text="Food Name"
+            android:fontFamily="monospace"
             android:textColor="#555252"
-            android:textSize="14sp"
-             />
+            android:textSize="20sp"
+            tools:text="FOOD NAME" />
 
         <TextView
             android:id="@+id/txtOrderStatus"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="1dp"
-            android:text="Pending"
+            android:layout_marginTop="-38dp"
+            android:layout_marginRight="1dp"
             android:textAlignment="textEnd"
-            android:textColor="#435ADA" />
+            android:fontFamily="@font/sitka_banner"
+            android:textSize="25sp"
+            android:textColor="#435ADA"
+            tools:text="Status" />
 
         <TextView
             android:id="@+id/txtOrderTimer"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_margin="1dp"
-            android:text="5 min"
+            android:textSize="18sp"
             android:textAlignment="textEnd"
-            android:textColor="#6072DA" />
+            android:textColor="#555252"
+            tools:text="time" />
 
     ></LinearLayout>
 

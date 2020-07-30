@@ -17,18 +17,11 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 
-data class LoginInfo(val username: String, val password: String){}
-
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        var txtLogo = findViewById<TextView>(R.id.txtLogo)
-        txtLogo.text = "Smart Food Court System"
-        var btnLogo = findViewById<Button>(R.id.btnLogo)
-        btnLogo.setOnClickListener{
-            loadLoginActivity()
-        }
+        loadLoginActivity()
     }
     private fun loadLoginActivity(){
         val intent: Intent = Intent(this, LoginActivity::class.java)
