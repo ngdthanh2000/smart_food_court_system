@@ -77,7 +77,7 @@ public class MenuFragment extends Fragment {
                 alertDialog.setTitle("Add new food");
 
                 final LayoutInflater inflater1 = getActivity().getLayoutInflater();
-                View dialog = inflater1.inflate(R.layout.edit_dialog, null);
+                final View dialog = inflater1.inflate(R.layout.edit_dialog, null);
                 edit_description = dialog.findViewById(R.id.edit_description);
                 edit_discount = dialog.findViewById(R.id.edit_discount);
                 edit_name = dialog.findViewById(R.id.edit_name);
@@ -104,50 +104,36 @@ public class MenuFragment extends Fragment {
                 alertDialog.setPositiveButton("Save", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        final AlertDialog.Builder confirmDialog = new AlertDialog.Builder(MenuFragment.this.getContext());
-                        confirmDialog.setTitle("Input your password");
-                        final View confirm_Dialog = inflater1.inflate(R.layout.confirm_dialog, null);
-
-                        final EditText confirmPass;
-                        Button btnConfirm;
-                        confirmPass = confirm_Dialog.findViewById(R.id.confirm_pass);
-                        btnConfirm = confirm_Dialog.findViewById(R.id.btnConfirm);
-                        btnConfirm.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                if (UserInfo.instance.getPass() == confirmPass.getText().toString()){
-                                    if (newFood != null) {
-                                        ref.push().setValue(newFood);
-                                        confirmDialog.setMessage("Your Food is added!");
-                                    }
-                                    else{
-                                        confirmDialog.setMessage("Add Food failed!");
-
-                                    }
-                                }
-                                else {
-                                    confirmDialog.setMessage("Wrong Password!");
-                                    confirmDialog.setView(confirm_Dialog);
-                                }
-                            }
-                        });
-                        confirmDialog.setView(confirm_Dialog);
-
+                        showCon();
                     }
                 });
 
                 alertDialog.setNegativeButton("Discard", new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-
+                    public void onClick(final DialogInterface dialogInterface1, int i) {
+                        final AlertDialog.Builder discard = new AlertDialog.Builder(MenuFragment.this.getContext());
+                        discard.setMessage("Are you sure discard all changes?");
+                        discard.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface2, int i) {
+                                dialogInterface2.cancel();
+                                dialogInterface1.cancel();
+                            }
+                        })
+                                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        dialogInterface.cancel();
+                                        alertDialog.show();
+                                    }
+                                });
+                        discard.create();
+                        discard.show();
                     }
                 });
                 alertDialog.show();
             }
         });
-
-
-
 
         return view;
     }
@@ -362,14 +348,38 @@ public class MenuFragment extends Fragment {
                             mDialog.dismiss();
                             Toast.makeText(MenuFragment.this.getContext(), ""+e.getMessage(), Toast.LENGTH_LONG).show();
                         }
-                    })
-                    .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onProgress(@NonNull UploadTask.TaskSnapshot taskSnapshot) {
-                            double progess = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
-                            mDialog.setMessage("Uploading " + progess +"%");
-                        }
                     });
         }
+    }
+
+    private void showCon(){
+        final AlertDialog.Builder confirmDialog = new AlertDialog.Builder(MenuFragment.this.getContext());
+        confirmDialog.setTitle("Input your password");
+        final LayoutInflater inflater1 = getActivity().getLayoutInflater();
+        final View confirm_Dialog = inflater1.inflate(R.layout.confirm_dialog, null);
+
+        final EditText confirmPass;
+        confirmPass = confirm_Dialog.findViewById(R.id.confirm_pass);
+        confirmDialog.setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                if (UserInfo.instance.getPass().contentEquals(confirmPass.getText().toString())){
+                    if (newFood != null) {
+                        ref.push().setValue(newFood);
+                        Toast.makeText(MenuFragment.this.getContext(), "Food is added", Toast.LENGTH_LONG).show();
+                    }
+                    else{
+                        Toast.makeText(MenuFragment.this.getContext(), "Add Food failed!", Toast.LENGTH_LONG).show();
+                    }
+                    dialogInterface.cancel();
+                }
+                else {
+                    Toast.makeText(MenuFragment.this.getContext(), "Wrong Password!", Toast.LENGTH_LONG).show();
+                    showCon();
+                }
+            }
+        });
+        confirmDialog.setView(confirm_Dialog);
+        confirmDialog.show();
     }
 }
