@@ -1,5 +1,6 @@
 package com.example.orderapp;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.IInterface;
@@ -26,6 +27,7 @@ import com.squareup.picasso.Picasso;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.view.GravityCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -43,7 +45,7 @@ implements NavigationView.OnNavigationItemSelectedListener
 {
     FirebaseDatabase database;
     DatabaseReference category;
-
+    DrawerLayout drawer;
     TextView txtFullName;
 
     RecyclerView recycler_menu;
@@ -78,7 +80,7 @@ implements NavigationView.OnNavigationItemSelectedListener
             }
         });
 
-        DrawerLayout drawer = (DrawerLayout)findViewById(R.id.drawer_layout);
+        drawer = (DrawerLayout)findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open,R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
@@ -132,16 +134,6 @@ implements NavigationView.OnNavigationItemSelectedListener
         recycler_menu.setAdapter(adapter);
     }
 
-    @Override
-    public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout)findViewById(R.id.drawer_layout);
-        if(drawer.isDrawerOpen(GravityCompat.START)){
-            drawer.closeDrawer(GravityCompat.START);
-        }
-        else{
-            super.onBackPressed();
-        }
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -162,6 +154,33 @@ implements NavigationView.OnNavigationItemSelectedListener
         return super.onOptionsItemSelected(item);
     }
 
+
+
+    @Override
+    public void onBackPressed(){
+        if (drawer.isDrawerOpen(GravityCompat.START)){
+            drawer.closeDrawer(GravityCompat.START);
+        }
+        else{
+            AlertDialog.Builder builder = new AlertDialog.Builder(Home.this);
+            builder.setMessage("Are you sure you want to log out?");
+            builder.setPositiveButton("Agree", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+
+                    Intent intent = new Intent(Home.this, SignIn.class);
+                    startActivity(intent);
+                }
+            });
+            builder.setNegativeButton("Close", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                }
+            });
+            AlertDialog dialog = builder.create();
+            dialog.show();
+        }
+    }
     @SuppressWarnings("StatementWthEmptyBody")
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -190,4 +209,5 @@ implements NavigationView.OnNavigationItemSelectedListener
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
 }

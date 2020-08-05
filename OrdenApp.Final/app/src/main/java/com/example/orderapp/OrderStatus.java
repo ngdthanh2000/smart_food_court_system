@@ -67,10 +67,10 @@ public class OrderStatus extends AppCompatActivity {
                 Request.class,
                 R.layout.order_layout,
                 OrderViewHolder.class,
-                request.orderByChild("phone").equalTo(phone)){
+                request.orderByChild("phoneNumber").equalTo(phone)){
             @Override
             protected void populateViewHolder(OrderViewHolder orderViewHolder, final Request request, int i) {
-               // Common.currentRequest = request;
+                //Common.currentRequest = request;
                 orderViewHolder.txtOrderId.setText("#"+adapter.getRef(i).getKey());
                 orderViewHolder.txtOrderTotal.setText(request.getTotal());
                 orderViewHolder.txtOrderTime.setText(request.getDate());
