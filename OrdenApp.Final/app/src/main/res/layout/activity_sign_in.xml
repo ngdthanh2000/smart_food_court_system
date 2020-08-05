@@ -23,7 +23,6 @@
             android:layout_height="wrap_content"
             android:hint="Username"
             android:inputType="text"
-            android:text="khanhquynh"
             android:textColor="@android:color/white"
             android:textColorHint="@android:color/white"
             android:textSize="34sp"
@@ -31,7 +30,7 @@
             app:met_floatingLabel="highlight"
             app:met_maxCharacters="11"
             app:met_primaryColor="@android:color/white"
-            app:met_singleLineEllipsis="true"/>
+            app:met_singleLineEllipsis="true" />
 
 
         <com.rengwuxian.materialedittext.MaterialEditText
@@ -40,7 +39,6 @@
             android:layout_height="wrap_content"
             android:hint="Password"
             android:inputType="textPassword"
-            android:text="khanhquynh"
             android:textColor="@android:color/white"
             android:textColorHint="@android:color/white"
             android:textSize="34sp"
@@ -71,6 +69,16 @@
         app:shadowHeight="5dp"
         app:cornerRadius="4dp"></info.hoang8f.widget.FButton>
 
+    <CheckBox
+        android:id="@+id/boxRemember"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="29dp"
+        android:layout_marginBottom="199dp"
+        android:text="Remember me"
+        android:textColor="#FFFFFF" />
 
 
 </RelativeLayout>

@@ -3,10 +3,13 @@ package com.example.orderapp;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.ProgressDialog;
+import android.app.RemoteAction;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -23,7 +26,11 @@ public class SignIn extends AppCompatActivity {
 
     EditText edtUsername, edtPassword,edtName;
     Button btnSignIn;
-
+    CheckBox Remember;
+    SharedPreferences loginPreferences;
+    SharedPreferences.Editor loginPrefsEditor;
+    Boolean saveLogin;
+    String username,password;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,6 +40,16 @@ public class SignIn extends AppCompatActivity {
         edtUsername = (MaterialEditText)findViewById(R.id.edtUsername);
         btnSignIn = (Button)findViewById(R.id.btnSignIn);
 
+        loginPreferences = getSharedPreferences("loginPrefs", MODE_PRIVATE);
+        loginPrefsEditor = loginPreferences.edit();
+        saveLogin = loginPreferences.getBoolean("saveLogin", false);
+        Remember = (CheckBox)findViewById(R.id.boxRemember);
+
+        if (saveLogin == true) {
+            edtUsername.setText(loginPreferences.getString("username", ""));
+            edtPassword.setText(loginPreferences.getString("password", ""));
+            Remember.setChecked(true);
+        }
 
         //Init Firebase
         FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -47,7 +64,7 @@ public class SignIn extends AppCompatActivity {
                 mDialog.show();
 
 
-                table_user.addValueEventListener(new ValueEventListener() {
+                table_user.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         //Check if user is exist or not
@@ -58,7 +75,18 @@ public class SignIn extends AppCompatActivity {
                             User user = dataSnapshot.child(edtUsername.getText().toString()).getValue(User.class);
                             if (user.getPassword().equals(edtPassword.getText().toString())) {
 
+                                username = edtUsername.getText().toString();
+                                password = edtPassword.getText().toString();
 
+                                if (Remember.isChecked()) {
+                                    loginPrefsEditor.putBoolean("saveLogin", true);
+                                    loginPrefsEditor.putString("username", username);
+                                    loginPrefsEditor.putString("password", password);
+                                    loginPrefsEditor.commit();
+                                } else {
+                                    loginPrefsEditor.clear();
+                                    loginPrefsEditor.commit();
+                                }
                                 Intent homeIntent = new Intent(SignIn.this, Home.class);
                                 Common.currentUser = user;
 
