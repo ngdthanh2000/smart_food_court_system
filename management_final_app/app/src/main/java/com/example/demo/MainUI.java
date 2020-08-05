@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
@@ -42,6 +43,7 @@ public class MainUI extends AppCompatActivity implements  NavigationView.OnNavig
     public Object clone() throws CloneNotSupportedException {
         return super.clone();
     }
+
 
     private class AsyncTaskLoadingData extends AsyncTask<Void, Void, Void> {
         @Override
@@ -203,7 +205,24 @@ public class MainUI extends AppCompatActivity implements  NavigationView.OnNavig
             drawer.closeDrawer(GravityCompat.START);
         }
         else{
-            super.onBackPressed();
+            AlertDialog.Builder builder = new AlertDialog.Builder(MainUI.this);
+            builder.setMessage("Are you sure you want to log out?");
+            builder.setPositiveButton("Agree", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    UserInfo.instance.clear();
+                    Intent intent = new Intent(MainUI.this, SignIn.class);
+                    startActivity(intent);
+
+                }
+            });
+            builder.setNegativeButton("Close", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                }
+            });
+            AlertDialog dialog = builder.create();
+            dialog.show();
         }
     }
 
@@ -212,9 +231,6 @@ public class MainUI extends AppCompatActivity implements  NavigationView.OnNavig
         switch (menuItem.getItemId()){
             case R.id.nav_menu:
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new MenuFragment()).commit();
-                break;
-            case R.id.nav_staff:
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new StaffFragment()).commit();
                 break;
             case R.id.nav_report:
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new ReportFragment()).commit();

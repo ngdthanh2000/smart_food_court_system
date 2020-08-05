@@ -359,6 +359,7 @@ public class MenuFragment extends Fragment {
             imgFolder.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                 @Override
                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    mDialog.dismiss();
                     Toast.makeText(MenuFragment.this.getContext(), "Uploaded!", Toast.LENGTH_LONG).show();
                     imgFolder.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                         @Override
